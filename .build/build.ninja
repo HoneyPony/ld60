@@ -1,0 +1,221 @@
+builddir = .build
+
+poni_h_path = /home/emdash/Documents/ponygame/poniescript/poniescript
+poniescript = /home/emdash/Documents/ponygame/poniescript/target/debug/poniescript
+
+rule poni-regenerate
+  command = ponies regenerate
+  generator = true
+  description = ponies regenerate
+
+build .build/build.ninja: poni-regenerate ponies.toml
+rule link-windows-release
+  command = x86_64-w64-mingw32-gcc $in -o $out -L/home/emdash/Documents/ponygame/poniescript/target/x86_64-pc-windows-gnu/release -l$runtime_lib -mwindows -lgdi32 -lws2_32 -luserenv -lntdll -lshcore -lole32 -lm
+  description = [0;34mlink[0m[2m.windows.release[0m -> $outdesc
+rule hot-link-windows-release
+  command = x86_64-w64-mingw32-gcc $in -o $out -shared -mwindows -lgdi32 -lws2_32 -luserenv -lntdll -lshcore -lole32
+  description = [0;34mhot [0m[2m.windows.release[0m -> $outdesc
+rule cc-windows-release
+  command = x86_64-w64-mingw32-gcc -c $in -o $out -MD -MF $out.d -I$poni_h_path -I. 
+  depfile = $out.d
+  deps = gcc
+  description = [0;32mcc  [0m[2m.windows.release[0m $indesc
+rule cargo-windows-release
+  command = cargo build --manifest-path $cargotoml -p $package --target x86_64-pc-windows-gnu --release
+  description = [0;31mrust[0m[2m.windows.release[0m $package
+rule poni-windows-release
+  command = $poniescript $outputargs $in $imports --no-timing
+  description = [0;35mponi[0m[2m.windows.release[0m $indesc
+build .build/windows-release/game: link-windows-release .build/windows-release/game-0.o | /home/emdash/Documents/ponygame/poniescript/target/x86_64-pc-windows-gnu/release/libponyquad.a
+  outdesc = game
+  runtime_lib = ponyquad
+build .build/windows-release/game.so: hot-link-windows-release .build/windows-release/hot-game-0.o
+  outdesc = game
+build .build/windows-release/game-0.o: cc-windows-release .build/windows-release/game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = game-0.c
+build .build/windows-release/hot-game-0.o: cc-windows-release .build/windows-release/hot-game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = hot-game-0.c
+build .build/windows-release/game-0.c: poni-windows-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --bind-fun update --disable-gc-frames
+  outputargs = -o .build/windows-release/game-0.c
+  indesc = game
+
+build .build/windows-release/hot-game-0.c: poni-windows-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --hot --bind-fun update --disable-gc-frames
+  outputargs = -o .build/windows-release/hot-game-0.c
+  indesc = game
+
+build /home/emdash/Documents/ponygame/poniescript/target/x86_64-pc-windows-gnu/release/libponyquad.a : cargo-windows-release
+  package = ponyquad
+  cargotoml = /home/emdash/Documents/ponygame/poniescript/Cargo.toml
+
+build windows-release: phony .build/windows-release/game
+
+rule link-local-debug
+  command = clang -fuse-ld=mold -lasound $in -o $out -L/home/emdash/Documents/ponygame/poniescript/target/debug -l$runtime_lib  -lm
+  description = [0;34mlink[0m[2m.local.debug[0m -> $outdesc
+rule hot-link-local-debug
+  command = clang -fuse-ld=mold -lasound $in -o $out -shared 
+  description = [0;34mhot [0m[2m.local.debug[0m -> $outdesc
+rule cc-local-debug
+  command = clang -g -fPIC -c $in -o $out -MD -MF $out.d -I$poni_h_path -I. 
+  depfile = $out.d
+  deps = gcc
+  description = [0;32mcc  [0m[2m.local.debug[0m $indesc
+rule cargo-local-debug
+  command = cargo build --manifest-path $cargotoml -p $package
+  description = [0;31mrust[0m[2m.local.debug[0m $package
+rule poni-local-debug
+  command = $poniescript $outputargs $in $imports --no-timing
+  description = [0;35mponi[0m[2m.local.debug[0m $indesc
+build .build/local-debug/game: link-local-debug .build/local-debug/game-0.o | /home/emdash/Documents/ponygame/poniescript/target/debug/libponyquad.a
+  outdesc = game
+  runtime_lib = ponyquad
+build .build/local-debug/game.so: hot-link-local-debug .build/local-debug/hot-game-0.o
+  outdesc = game
+build .build/local-debug/game-0.o: cc-local-debug .build/local-debug/game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = game-0.c
+build .build/local-debug/hot-game-0.o: cc-local-debug .build/local-debug/hot-game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = hot-game-0.c
+build .build/local-debug/game-0.c: poni-local-debug game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --bind-fun update --disable-gc-frames
+  outputargs = -o .build/local-debug/game-0.c
+  indesc = game
+
+build .build/local-debug/hot-game-0.c: poni-local-debug game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --hot --bind-fun update --disable-gc-frames
+  outputargs = -o .build/local-debug/hot-game-0.c
+  indesc = game
+
+build /home/emdash/Documents/ponygame/poniescript/target/debug/libponyquad.a : cargo-local-debug
+  package = ponyquad
+  cargotoml = /home/emdash/Documents/ponygame/poniescript/Cargo.toml
+
+build local-debug: phony .build/local-debug/game
+
+rule link-local-release
+  command = clang -fuse-ld=mold -lasound $in -o $out -L/home/emdash/Documents/ponygame/poniescript/target/release -l$runtime_lib  -lm
+  description = [0;34mlink[0m[2m.local.release[0m -> $outdesc
+rule hot-link-local-release
+  command = clang -fuse-ld=mold -lasound $in -o $out -shared 
+  description = [0;34mhot [0m[2m.local.release[0m -> $outdesc
+rule cc-local-release
+  command = clang -O2 -c $in -o $out -MD -MF $out.d -I$poni_h_path -I. 
+  depfile = $out.d
+  deps = gcc
+  description = [0;32mcc  [0m[2m.local.release[0m $indesc
+rule cargo-local-release
+  command = cargo build --manifest-path $cargotoml -p $package --release
+  description = [0;31mrust[0m[2m.local.release[0m $package
+rule poni-local-release
+  command = $poniescript $outputargs $in $imports --no-timing
+  description = [0;35mponi[0m[2m.local.release[0m $indesc
+build .build/local-release/game: link-local-release .build/local-release/game-0.o | /home/emdash/Documents/ponygame/poniescript/target/release/libponyquad.a
+  outdesc = game
+  runtime_lib = ponyquad
+build .build/local-release/game.so: hot-link-local-release .build/local-release/hot-game-0.o
+  outdesc = game
+build .build/local-release/game-0.o: cc-local-release .build/local-release/game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = game-0.c
+build .build/local-release/hot-game-0.o: cc-local-release .build/local-release/hot-game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = hot-game-0.c
+build .build/local-release/game-0.c: poni-local-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --bind-fun update --disable-gc-frames
+  outputargs = -o .build/local-release/game-0.c
+  indesc = game
+
+build .build/local-release/hot-game-0.c: poni-local-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --hot --bind-fun update --disable-gc-frames
+  outputargs = -o .build/local-release/hot-game-0.c
+  indesc = game
+
+build /home/emdash/Documents/ponygame/poniescript/target/release/libponyquad.a : cargo-local-release
+  package = ponyquad
+  cargotoml = /home/emdash/Documents/ponygame/poniescript/Cargo.toml
+
+build local-release: phony .build/local-release/game
+
+rule link-web-debug
+  command = wasm-ld $in -o $out -L/home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/debug -l$runtime_lib  --export-all --allow-undefined --no-demangle -z stack-size=1048576 --stack-first
+  description = [0;34mlink[0m[2m.web.debug[0m -> $outdesc
+rule hot-link-web-debug
+  command = wasm-ld $in -o $out -shared 
+  description = [0;34mhot [0m[2m.web.debug[0m -> $outdesc
+rule cc-web-debug
+  command = clang -c $in -o $out -MD -MF $out.d -I$poni_h_path -I.  -target wasm32 -DPONI_WASM32 -nostdinc -nostdlib
+  depfile = $out.d
+  deps = gcc
+  description = [0;32mcc  [0m[2m.web.debug[0m $indesc
+rule cargo-web-debug
+  command = cargo build --manifest-path $cargotoml -p $package --target wasm32-unknown-unknown
+  description = [0;31mrust[0m[2m.web.debug[0m $package
+rule poni-web-debug
+  command = $poniescript $outputargs $in $imports --no-timing
+  description = [0;35mponi[0m[2m.web.debug[0m $indesc
+build .build/web-debug/game: link-web-debug .build/web-debug/game-0.o | /home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/debug/libponyquad.a
+  outdesc = game
+  runtime_lib = ponyquad
+build .build/web-debug/game.so: hot-link-web-debug .build/web-debug/hot-game-0.o
+  outdesc = game
+build .build/web-debug/game-0.o: cc-web-debug .build/web-debug/game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = game-0.c
+build .build/web-debug/hot-game-0.o: cc-web-debug .build/web-debug/hot-game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = hot-game-0.c
+build .build/web-debug/game-0.c: poni-web-debug game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --bind-fun update --disable-gc-frames
+  outputargs = -o .build/web-debug/game-0.c
+  indesc = game
+
+build .build/web-debug/hot-game-0.c: poni-web-debug game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --hot --bind-fun update --disable-gc-frames
+  outputargs = -o .build/web-debug/hot-game-0.c
+  indesc = game
+
+build /home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/debug/libponyquad.a : cargo-web-debug
+  package = ponyquad
+  cargotoml = /home/emdash/Documents/ponygame/poniescript/Cargo.toml
+
+build web-debug: phony .build/web-debug/game
+
+rule link-web-release
+  command = wasm-ld $in -o $out -L/home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/release -l$runtime_lib  --export-all --allow-undefined --no-demangle -z stack-size=1048576 --stack-first
+  description = [0;34mlink[0m[2m.web.release[0m -> $outdesc
+rule hot-link-web-release
+  command = wasm-ld $in -o $out -shared 
+  description = [0;34mhot [0m[2m.web.release[0m -> $outdesc
+rule cc-web-release
+  command = clang -O2 -c $in -o $out -MD -MF $out.d -I$poni_h_path -I.  -target wasm32 -DPONI_WASM32 -nostdinc -nostdlib
+  depfile = $out.d
+  deps = gcc
+  description = [0;32mcc  [0m[2m.web.release[0m $indesc
+rule cargo-web-release
+  command = cargo build --manifest-path $cargotoml -p $package --target wasm32-unknown-unknown --release
+  description = [0;31mrust[0m[2m.web.release[0m $package
+rule poni-web-release
+  command = $poniescript $outputargs $in $imports --no-timing
+  description = [0;35mponi[0m[2m.web.release[0m $indesc
+build .build/web-release/game: link-web-release .build/web-release/game-0.o | /home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/release/libponyquad.a
+  outdesc = game
+  runtime_lib = ponyquad
+build .build/web-release/game.so: hot-link-web-release .build/web-release/hot-game-0.o
+  outdesc = game
+build .build/web-release/game-0.o: cc-web-release .build/web-release/game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = game-0.c
+build .build/web-release/hot-game-0.o: cc-web-release .build/web-release/hot-game-0.c | $poni_h_path/poni/poni.h $poni_h_path/poni/poni_standalone.h $poni_h_path/poni/poni_gc.h
+  indesc = hot-game-0.c
+build .build/web-release/game-0.c: poni-web-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --bind-fun update --disable-gc-frames
+  outputargs = -o .build/web-release/game-0.c
+  indesc = game
+
+build .build/web-release/hot-game-0.c: poni-web-release game.poni screen.poni update_smoothing.poni /home/emdash/Documents/ponygame/poniescript/ponyquad/keycodes.poni
+  imports = -i /home/emdash/Documents/ponygame/poniescript/ponyquad/ponyquad.h -e --hot --bind-fun update --disable-gc-frames
+  outputargs = -o .build/web-release/hot-game-0.c
+  indesc = game
+
+build /home/emdash/Documents/ponygame/poniescript/target/wasm32-unknown-unknown/release/libponyquad.a : cargo-web-release
+  package = ponyquad
+  cargotoml = /home/emdash/Documents/ponygame/poniescript/Cargo.toml
+
+build web-release: phony .build/web-release/game
+

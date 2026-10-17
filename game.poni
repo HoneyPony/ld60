@@ -1,0 +1,8 @@
+let screen = new Screen {
+    bg_color: (#7d8777ff),
+    target_size: (240, 180)
+};
+
+fun update_dt(dt: float) {
+    
+}

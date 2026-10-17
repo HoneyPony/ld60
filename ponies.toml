@@ -1,0 +1,4 @@
+[projects.game]
+files = ["game.poni", "screen.poni", "update_smoothing.poni"]
+imports = []
+kind = "Ponyquad"
