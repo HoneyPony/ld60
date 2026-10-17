@@ -3,8 +3,14 @@ let screen = new Screen {
     target_size: (240, 180)
 };
 
+class Textures {
+    let horse1: Texture2D = load_texture("tex/horse1.png");
+}
+
+let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
+
 let world = new World{};
-var player: Actor = new Actor{collider: new Collider{size:(0, 0), pos: (0, 0)}};
+let player = new Player{};
 
 fun init_world() {
     let data: DynArray[int] = [
@@ -24,34 +30,57 @@ fun init_world() {
         tag: 1
     });
 
-    player = world.add_actor((0, -40), (16, 16));
+    player.actor = world.add_actor((0, -40), (16, 16));
 }
 
-var player_speed: vec2 = (0, 0);
+class Player {
+    // Note to self: it could be useful to have some way to have a variable that we can somehow
+    // initialize in a safe way, so that we don't need these dummy values to keep it non-nullable...
+    var actor: Actor = new Actor{collider: new Collider{size:(0, 0), pos: (0, 0)}};
+
+    var speed: vec2 = (0, 0);
+    var flip_h: bool = false;
+    var frame: int = 0; // Current animation frame
+
+    fun update_dt(dt: float) {
+        let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
+
+        if not on_ground {
+            speed.y += dt * 500.0;
+            frame = if speed.y > 0 { 2 } else { 1 };
+        }
+        else {
+            frame = 0;
+        }
+
+        if is_key_down(K_LEFT) {
+            speed.x = -100;
+            flip_h = true;
+        }
+        else if is_key_down(K_RIGHT) {
+            speed.x = 100;
+            flip_h = false;
+        }
+        else {
+            speed.x = 0;
+        }
+
+        if is_key_pressed(K_SPACE) and on_ground {
+            speed.y = -300;
+        }
+
+        world.move_h(actor, speed.x * dt);
+        world.move_v(actor, speed.y * dt);
+    }
+
+    fun draw() {
+        // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
+        draw_texture_flip_frame(tex.horse1, actor.collider.pos, flip_h, false, (frame * 16, 0, 16, 16), (#ffff));
+    }
+}
 
 fun update_dt(dt: float) {
-    let on_ground = world.collide_check(player, player.collider.pos + (0, 1));
-
-    if not on_ground {
-        player_speed.y += dt * 500.0;
-    }
-
-    if is_key_down(K_LEFT) {
-        player_speed.x = -100;
-    }
-    else if is_key_down(K_RIGHT) {
-        player_speed.x = 100;
-    }
-    else {
-        player_speed.x = 0;
-    }
-
-    if is_key_pressed(K_SPACE) and on_ground {
-        player_speed.y = -300;
-    }
-
-    world.move_h(player, player_speed.x * dt);
-    world.move_v(player, player_speed.y * dt);
+    player.update_dt(dt);
     
 }
 
@@ -70,6 +99,5 @@ fun draw() {
         y += 1;
     }
 
-    draw_rectangle(player.collider.pos, (16, 16), (#38cf3aff));
-    //player.collider.pos = (0, -40);
+    player.draw();
 }
