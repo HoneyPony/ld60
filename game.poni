@@ -5,12 +5,22 @@ let screen = new Screen {
 
 class Textures {
     let horse1: Texture2D = load_texture("tex/horse1.png");
+
+    let tiles = load_texture("tex/tiles.png");
 }
 
 let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
 
 let world = new World{};
 let player = new Player{};
+
+let physics_layer = new StaticTiledLayer {
+    tile_width: 16,
+    tile_height: 16,
+    width: 1,
+    colliders: [],
+    tag: 1
+};
 
 fun init_world() {
     let data: DynArray[int] = [
@@ -22,15 +32,11 @@ fun init_world() {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     ];
 
-    world.layers.push(new StaticTiledLayer {
-        tile_width: 16,
-        tile_height: 16,
-        width: 14,
-        colliders: data,
-        tag: 1
-    });
+    world.layers.push(physics_layer);
 
     player.actor = world.add_actor((0, -40), (16, 16));
+
+    world_loader.load_world("level/test.json");
 }
 
 class Player {
@@ -79,9 +85,69 @@ class Player {
     }
 }
 
+class WorldLoader {
+    var pending: StringLoader? = nil;
+    var cur_map: Map? = nil;
+    var map_size: vec2i = (0, 0);
+    //var should_load = false;
+
+    fun load_world(path: StrBuf) {
+        pending = load_string(path);
+        //should_load = true;
+    }
+
+    fun tick() {
+        //if not should_load { return; }
+
+        let pending_ = pending else return;
+        let data = get_loaded_string(pending_);
+        let data = data else return;
+
+        print(data);
+
+        let a: StrBuf = "../tex/tiles.png";
+        let map = load_map(data, [a], [tex.tiles]);
+
+        print("loaded? ", map.is_some());
+
+        cur_map = map;
+
+        // Somehow this caused a crash.
+        pending = nil;
+
+        let map = map else return;
+        map_size = get_tile_map_size(map);
+
+        physics_layer.colliders = [];
+        physics_layer.width = map_size.x;
+
+        for y in 0..map_size.y {
+            for x in 0..map_size.x {
+                let tile = get_tile_map_tile(map, "Tile Layer 1", (x, y));
+                
+                fun map_to_physics(tile: int) -> int {
+                    if tile == -1 or tile == 0 { return T_EMPTY; }
+                    return T_SOLID;
+                }
+
+                physics_layer.colliders.push(map_to_physics(tile));
+            }
+        }
+    }
+
+    fun draw() {
+        let map = cur_map else return;
+        let size = map_size * 16;
+        draw_map(map, "Tile Layer 1", (0, 0, size.x, size.y));
+    }
+}
+
+let world_loader = new WorldLoader{};
+
+
 fun update_dt(dt: float) {
     player.update_dt(dt);
-    
+    world_loader.tick();
 }
 
 fun draw() {
@@ -98,6 +164,8 @@ fun draw() {
         }
         y += 1;
     }
+
+    world_loader.draw();
 
     player.draw();
 }
