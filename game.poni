@@ -39,6 +39,23 @@ fun init_world() {
     world_loader.load_world("level/test.json");
 }
 
+/// Helper for key just pressed checking due to weird update() system.
+class Key {
+    var was_down: bool = false;
+    var is_down: bool = false;
+    var is_just_pressed: bool = false;
+    let keycode: int;
+
+    fun update() {
+        was_down = is_down;
+        is_down = is_key_down(keycode);
+        is_just_pressed = is_down and not was_down;
+    }
+}
+
+let key_space = new Key { keycode: K_SPACE };
+let keys = [key_space];
+
 class Player {
     // Note to self: it could be useful to have some way to have a variable that we can somehow
     // initialize in a safe way, so that we don't need these dummy values to keep it non-nullable...
@@ -76,7 +93,7 @@ class Player {
             speed.x = 0;
         }
 
-        if is_key_pressed(K_SPACE) and on_ground {
+        if key_space.is_just_pressed and on_ground {
             speed.y = -300;
         }
 
@@ -151,6 +168,11 @@ let world_loader = new WorldLoader{};
 
 
 fun update_dt(dt: float) {
+    // Update keys for is_just_pressed tracking
+    for i in 0..keys.length {
+        keys[i].update();
+    }
+
     player.update_dt(dt);
     world_loader.tick();
 
