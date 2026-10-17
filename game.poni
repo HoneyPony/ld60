@@ -148,22 +148,30 @@ let world_loader = new WorldLoader{};
 fun update_dt(dt: float) {
     player.update_dt(dt);
     world_loader.tick();
+
+
+    //var cam_target = -player.actor.collider.pos;
+    //screen.target_offset += (cam_target - screen.target_offset) * 1;//0.03;
 }
 
 fun draw() {
-    let layer = world.layers[0];
-    var y = 0;
-    var ndx = 0;
-    while ndx < layer.colliders.length {
-        for x in 0..layer.width {
-            let tile = layer.colliders[ndx];
-            if tile != T_EMPTY {
-                draw_rectangle((x * 16, y * 16), (16, 16), (#4d35d6ff));
-            }
-            ndx += 1;
-        }
-        y += 1;
-    }
+    screen.target_offset = -player.actor.collider.pos;
+    screen.update();
+    // let layer = world.layers[0];
+    // var y = 0;
+    // var ndx = 0;
+    // while ndx < layer.colliders.length {
+    //     for x in 0..layer.width {
+    //         let tile = layer.colliders[ndx];
+    //         if tile != T_EMPTY {
+    //             draw_rectangle((x * 16, y * 16), (16, 16), (#4d35d6ff));
+    //         }
+    //         ndx += 1;
+    //     }
+    //     y += 1;
+    // }
+
+    
 
     world_loader.draw();
 
