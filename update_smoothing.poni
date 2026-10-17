@@ -1,6 +1,7 @@
 class UpdateSmoothing {
     var avg_dt: float = 0.003;
     var accumulator: float = 0;
+    var do_init = true;
 
     fun compute_dt() -> float {
         var dt = get_frame_time();
@@ -17,6 +18,11 @@ class UpdateSmoothing {
     }
 
     fun update() {
+        if do_init {
+            init_world();
+            do_init = false;
+        }
+
         // Handle game logic
         var dt = update_smoothing.compute_dt();
 
@@ -38,6 +44,8 @@ class UpdateSmoothing {
                 break;
             }
         }
+
+        draw();
     }
 }
 

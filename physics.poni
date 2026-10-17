@@ -1,0 +1,228 @@
+
+let T_EMPTY = 0;
+let T_SOLID = 1;
+let T_JUMP_THROUGH = 2;
+let T_COLLIDER = 3;
+
+fun tile_or(s: int, other: int) -> int {
+    if s == T_EMPTY and other == T_EMPTY { return T_EMPTY; }
+    if s == T_JUMP_THROUGH and other == T_JUMP_THROUGH { return T_JUMP_THROUGH; }
+    if s == T_JUMP_THROUGH and other == T_EMPTY { return T_JUMP_THROUGH; }
+    if s == T_EMPTY and other == T_JUMP_THROUGH { return T_JUMP_THROUGH; }
+    T_SOLID
+}
+
+class StaticTiledLayer {
+    var colliders: DynArray[int];
+    var tile_width: float;
+    var tile_height: float;
+    var width: int;
+    var tag: int;
+}
+
+class Actor {
+    var collider: Collider;
+}
+
+class Solid {
+    var collider: Collider;
+}
+
+class Collider {
+    var collidable: bool = true;
+    var squished: bool = false;
+    var pos: vec2;
+    var size: vec2i;
+    var remainder: vec2 = (0, 0);
+    var squishers: DynArray[Solid] = [];
+    var descent: bool = false;
+    var seen_wood: bool = false;
+}
+
+class World {
+    var layers: DynArray[StaticTiledLayer] = [];
+    var actors: DynArray[Actor] = [];
+    var solids: DynArray[Solid] = [];
+
+    fun add_actor(pos: vec2, size: vec2i) -> Actor {
+        let tile = collide_solids(pos, size);
+        
+        var descent = false;
+        var seen_wood = false;
+        if tile == T_JUMP_THROUGH {
+            descent = true;
+            seen_wood = true;
+        }
+
+        let collider = new Collider {
+            pos: pos,
+            size: size,
+            descent: descent,
+            seen_wood: seen_wood
+        };
+
+        let actor = new Actor {
+            collider: collider
+        };
+
+        actors.push(actor);
+        actor
+    }
+
+    fun add_solid(pos: vec2, size: vec2i) -> Solid {
+        let collider = new Collider {
+            pos: pos,
+            size: size
+        };
+
+        let solid = new Solid { collider: collider };
+        solids.push(solid);
+        solid
+    }
+
+    fun collide_solids(pos: vec2, size: vec2i) -> int {
+        let tile = collide_tag(1, pos, size);
+        if tile != T_EMPTY {
+            return tile;
+        }
+
+        // TODO: solids
+        return T_EMPTY;
+    }
+
+    fun collide_tag(tag: int, pos: vec2, size: vec2i) -> int {
+        for i in 0..layers.length {
+            let layer = layers[i];
+
+            let tile_width = layer.tile_width;
+            let tile_height = layer.tile_height;
+            let layer_width = layer.width;
+            let layer_tag = layer.tag;
+
+            let layer_height = layer.colliders.length / layer_width + 1;
+            fun check(pos: vec2) -> int {
+                let y = floor(pos.y / tile_width);
+                let x = floor(pos.x / tile_height);
+
+                let ix = y * layer_width + x;
+                if y >= 0
+                    and y < layer_height
+                    and x >= 0
+                    and x < layer_width
+                    and ix >= 0
+                    and ix < layer.colliders.length
+                    and layer_tag == tag
+                    and layer.colliders[ix] != T_EMPTY
+                {
+                    return layer.colliders[ix];
+                }
+                T_EMPTY;
+            };
+
+            var tile = check(pos);
+            tile = tile_or(tile, check(pos + (size.x - 1, 0)));
+            tile = tile_or(tile, check(pos + (size.x - 1, size.y - 1)));
+            tile = tile_or(tile, check(pos + (0, size.y - 1)));
+
+            if tile != T_EMPTY { return tile; }
+
+            if size.x > tile_width {
+                var x = pos.x;
+                while { x += tile_width; x < pos.x + size.x - 1 }
+                {
+                    tile = check((x, pos.y));
+                    tile = tile_or(tile, check((x, pos.y + size.y - 1)));
+                    if tile != T_EMPTY { return tile; }
+                }
+            }
+
+            if size.y > tile_height {
+                var y = pos.y;
+                while { y += tile_height; y < pos.y + size.y - 1 }
+                {
+                    tile = check((pos.x, y));
+                    tile = tile_or(tile, check((pos.x + size.x - 1, y)));
+                    if tile != T_EMPTY { return tile; }
+                }
+            }
+        }
+
+        T_EMPTY
+    }
+
+    fun move_v(actor: Actor, dy: float) -> bool {
+        let col = actor.collider;
+        col.remainder.y += dy;
+
+        var move = round(col.remainder.y);
+        if move != 0 {
+            col.remainder.y -= move;
+            let sign = signum(move);
+
+            while move != 0 {
+                let tile = collide_solids(
+                    col.pos + (0, sign),
+                    col.size
+                );
+
+                if tile == T_JUMP_THROUGH and col.descent {
+                    col.seen_wood = true;
+                }
+                if tile == T_JUMP_THROUGH and sign < 0 {
+                    col.seen_wood = true;
+                    col.descent = true;
+                }
+
+                if tile == T_EMPTY or (tile == T_JUMP_THROUGH and col.descent) {
+                    col.pos.y += sign;
+                    move -= sign;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        let tile = collide_solids(col.pos, col.size);
+        if tile != T_JUMP_THROUGH {
+            col.seen_wood = false;
+            col.descent = false;
+        }
+
+        true
+    }
+
+    fun move_h(actor: Actor, dx: float) -> bool {
+        let col = actor.collider;
+        col.remainder.x += dx;
+
+        var move = round(col.remainder.x);
+        if move != 0 {
+            col.remainder.x -= move;
+            let sign = signum(move);
+
+            while move != 0 {
+                let tile = collide_solids(col.pos + (sign, 0), col.size);
+                if tile == T_JUMP_THROUGH {
+                    col.descent = true;
+                    col.seen_wood = true;
+                }
+                if tile == T_EMPTY or tile == T_JUMP_THROUGH {
+                    col.pos.x += sign;
+                    move -= sign;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+}
+
+fun signum(x: int) -> int {
+    if x > 0 { return 1; }
+    if x < 0 { return -1; }
+    return 0;
+}

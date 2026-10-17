@@ -1,4 +1,9 @@
 [projects.game]
-files = ["game.poni", "screen.poni", "update_smoothing.poni"]
+files = [
+    "game.poni",
+    "screen.poni",
+    "update_smoothing.poni",
+    "physics.poni",
+]
 imports = []
 kind = "Ponyquad"

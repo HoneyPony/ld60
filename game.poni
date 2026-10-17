@@ -3,6 +3,64 @@ let screen = new Screen {
     target_size: (240, 180)
 };
 
+let world = new World{};
+var player: Actor = new Actor{collider: new Collider{size:(0, 0), pos: (0, 0)}};
+
+fun init_world() {
+    let data: DynArray[int] = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    ];
+
+    world.layers.push(new StaticTiledLayer {
+        tile_width: 16,
+        tile_height: 16,
+        width: 14,
+        colliders: data,
+        tag: 1
+    });
+
+    player = world.add_actor((0, -40), (16, 16));
+}
+
+var player_speed: vec2 = (0, 0);
+
 fun update_dt(dt: float) {
+    player_speed.y += dt * 500.0;
+
+    if is_key_down(K_LEFT) {
+        player_speed.x = -100;
+    }
+    else if is_key_down(K_RIGHT) {
+        player_speed.x = 100;
+    }
+    else {
+        player_speed.x = 0;
+    }
+
+    world.move_h(player, player_speed.x * dt);
+    world.move_v(player, player_speed.y * dt);
     
+}
+
+fun draw() {
+    let layer = world.layers[0];
+    var y = 0;
+    var ndx = 0;
+    while ndx < layer.colliders.length {
+        for x in 0..layer.width {
+            let tile = layer.colliders[ndx];
+            if tile != T_EMPTY {
+                draw_rectangle((x * 16, y * 16), (16, 16), (#4d35d6ff));
+            }
+        }
+        ndx += 1;
+    }
+
+    draw_rectangle(player.collider.pos, (16, 16), (#38cf3aff));
+    //player.collider.pos = (0, -40);
 }
