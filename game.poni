@@ -30,7 +30,11 @@ fun init_world() {
 var player_speed: vec2 = (0, 0);
 
 fun update_dt(dt: float) {
-    player_speed.y += dt * 500.0;
+    let on_ground = world.collide_check(player, player.collider.pos + (0, 1));
+
+    if not on_ground {
+        player_speed.y += dt * 500.0;
+    }
 
     if is_key_down(K_LEFT) {
         player_speed.x = -100;
@@ -40,6 +44,10 @@ fun update_dt(dt: float) {
     }
     else {
         player_speed.x = 0;
+    }
+
+    if is_key_pressed(K_SPACE) and on_ground {
+        player_speed.y = -300;
     }
 
     world.move_h(player, player_speed.x * dt);

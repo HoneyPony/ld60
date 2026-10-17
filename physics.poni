@@ -219,6 +219,18 @@ class World {
 
         true
     }
+
+    fun collide_check(actor: Actor, pos: vec2) -> bool {
+        let collider = actor.collider;
+
+        let tile = collide_solids(pos, collider.size);
+        if collider.descent {
+            tile == T_SOLID or tile == T_COLLIDER
+        }
+        else {
+            tile == T_SOLID or tile == T_COLLIDER or tile == T_JUMP_THROUGH
+        }
+    }
 }
 
 fun signum(x: int) -> int {
