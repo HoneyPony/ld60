@@ -131,7 +131,7 @@ class Player {
 
     fun draw() {
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
-        draw_texture_flip_frame(tex.horse1, actor.collider.pos, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
+        draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0), flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
     }
 }
 
@@ -182,7 +182,7 @@ class WorldLoader {
 
                 // Crate
                 if tile == 9 {
-                    world.add_solid((x, y) * 16, (16, 16));
+                    world.add_solid((x, y) * 16 + (1, 1), (14, 14));
                     print(set_tile_map_tile(map, "Tile Layer 1", (x, y), 0));
                     print(get_tile_map_tile(map, "Tile Layer 1", (x, y)));
                     tile = 0;
@@ -207,6 +207,10 @@ fun update_dt(dt: float) {
     // Update keys for is_just_pressed tracking
     for i in 0..keys.length {
         keys[i].update();
+    }
+
+    for i in 0..world.solids.length {
+        world.solid_move(world.solids[i], (dt * 10, 0));
     }
 
     player.update_dt(dt);
@@ -241,7 +245,7 @@ fun draw() {
     for i in 0..world.solids.length {
         let solid = world.solids[i];
         //print("draw crate @ ", solid.collider.pos);
-        draw_texture_flip_frame(tex.tiles, solid.collider.pos, false, false, (16, 16, 16, 16), (#ffff));
+        draw_texture_flip_frame(tex.tiles, solid.collider.pos - (1, 1), false, false, (16, 16, 16, 16), (#ffff));
     }
 
     player.draw();

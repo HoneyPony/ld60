@@ -37,6 +37,10 @@ class Collider {
     var squishers: DynArray[Solid] = [];
     var descent: bool = false;
     var seen_wood: bool = false;
+
+    fun rect() -> vec4 {
+        (pos.x, pos.y, size.x, size.y)
+    }
 }
 
 class World {
@@ -86,8 +90,73 @@ class World {
             return tile;
         }
 
-        // TODO: solids
-        return T_EMPTY;
+        for i in 0..solids.length {
+            let solid = solids[i];
+            if solid.collider.collidable and rect_overlaps(solid.collider.rect(),
+                (pos.x, pos.y, size.x, size.y))
+            {
+                return T_COLLIDER;
+            }
+        }
+
+        T_EMPTY
+    }
+
+    fun solid_move(solid: Solid, delta: vec2) {
+        let collider = solid.collider;
+        collider.remainder += delta;
+        let move = round2(collider.remainder);
+
+        let riding_actors: DynArray[Actor] = [];
+        let pushing_actors: DynArray[Actor] = [];
+
+        let riding_rect: vec4 = (collider.pos.x, collider.pos.y - 1,
+            collider.size.x, 1);
+        let pushing_rect: vec4 = (collider.pos.x + move.x, collider.pos.y,
+            collider.size.x, collider.size.y);
+        
+        for i in 0..self.actors.length {
+            let actor = actors[i];
+
+            let rider_rect: vec4 = (
+                actor.collider.pos.x,
+                actor.collider.pos.y + actor.collider.size.y,
+                actor.collider.size.x,
+                1.0
+            );
+            if rect_overlaps(riding_rect, rider_rect) {
+                riding_actors.push(actor);
+            }
+            else {
+                if rect_overlaps(pushing_rect, actor.collider.rect()) and not actor.collider.squished {
+                    pushing_actors.push(actor);
+                }
+            }
+
+            if not rect_overlaps(pushing_rect, actor.collider.rect()) {
+                // TODO: Remove squisher..?
+            }
+        }
+
+        collider.collidable = false;
+        for i in 0..riding_actors.length {
+            self.move_h(riding_actors[i], move.x);
+        }
+        for i in 0..pushing_actors.length {
+            let squished = not self.move_h(pushing_actors[i], move.x);
+            if squished {
+                // TODO: squishers...?
+            }
+        }
+
+        if move.x != 0 {
+            collider.remainder.x -= move.x;
+            collider.pos.x += move.x;
+        }
+        if move.y != 0 {
+            collider.remainder.y -= move.y;
+            collider.pos.y += move.y;
+        }
     }
 
     fun collide_tag(tag: int, pos: vec2, size: vec2i) -> int {
@@ -237,4 +306,16 @@ fun signum(x: int) -> int {
     if x > 0 { return 1; }
     if x < 0 { return -1; }
     return 0;
+}
+
+fun rect_overlaps(a: vec4, b: vec4) -> bool {
+    fun left(x: vec4) -> float { return x.x; }
+    fun right(x: vec4) -> float { return x.x + x.z; }
+    fun top(x: vec4) -> float { return x.y; }
+    fun bottom(x: vec4) -> float { return x.y + x.w; }
+
+    left(a) <= right(b)
+        and right(a) >= left(b)
+        and top(a) <= bottom(b)
+        and bottom(a) >= top(b)
 }
