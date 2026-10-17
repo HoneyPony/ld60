@@ -56,6 +56,23 @@ class Key {
 let key_space = new Key { keycode: K_SPACE };
 let keys = [key_space];
 
+class Animation {
+    let frames: Array[int];
+    var frame: int = 0;
+    var frame_duration: float;
+    var accumulator: float = 0;
+
+    fun update_dt(dt: float) {
+        accumulator += dt;
+        if accumulator >= frame_duration {
+            accumulator -= frame_duration;
+            frame = (frame + 1) % frames.length;
+        }
+    }
+
+    fun get_frame() -> int { frames[frame] }
+}
+
 class Player {
     // Note to self: it could be useful to have some way to have a variable that we can somehow
     // initialize in a safe way, so that we don't need these dummy values to keep it non-nullable...
@@ -65,17 +82,19 @@ class Player {
     var flip_h: bool = false;
     var frame: int = 0; // Current animation frame
 
+    let run_anim = new Animation { frames: [1, 2], frame_duration: 0.1 };
+
     fun update_dt(dt: float) {
+        run_anim.update_dt(dt);
+
         let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
         let on_ceiling = world.collide_check(actor, actor.collider.pos - (0, 1));
 
-        if not on_ground {
+        let use_h_frame = if not on_ground {
             speed.y += dt * 500.0;
-            frame = if speed.y > 0 { 2 } else { 1 };
-        }
-        else {
-            frame = 0;
-        }
+            frame = if speed.y > 0 { 4 } else { 3 };
+            false
+        } else { true };
 
         if on_ceiling and speed.y < 0 {
             speed.y = 0;
@@ -93,6 +112,15 @@ class Player {
             speed.x = 0;
         }
 
+        if use_h_frame {
+            if speed.x != 0 {
+                frame = run_anim.get_frame();
+            }
+            else {
+                frame = 0;
+            }
+        }
+
         if key_space.is_just_pressed and on_ground {
             speed.y = -300;
         }
@@ -103,7 +131,7 @@ class Player {
 
     fun draw() {
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
-        draw_texture_flip_frame(tex.horse1, actor.collider.pos, flip_h, false, (frame * 16, 0, 16, 16), (#ffff));
+        draw_texture_flip_frame(tex.horse1, actor.collider.pos, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
     }
 }
 
