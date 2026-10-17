@@ -101,8 +101,8 @@ class World {
 
             let layer_height = layer.colliders.length / layer_width + 1;
             fun check(pos: vec2) -> int {
-                let y = floor(pos.y / tile_width);
-                let x = floor(pos.x / tile_height);
+                let y = floor(pos.y / tile_height);
+                let x = floor(pos.x / tile_width);
 
                 let ix = y * layer_width + x;
                 if y >= 0
