@@ -50,6 +50,7 @@ class Player {
 
     fun update_dt(dt: float) {
         let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
+        let on_ceiling = world.collide_check(actor, actor.collider.pos - (0, 1));
 
         if not on_ground {
             speed.y += dt * 500.0;
@@ -57,6 +58,10 @@ class Player {
         }
         else {
             frame = 0;
+        }
+
+        if on_ceiling and speed.y < 0 {
+            speed.y = 0;
         }
 
         if is_key_down(K_LEFT) {
