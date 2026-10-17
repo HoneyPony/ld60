@@ -173,11 +173,19 @@ class WorldLoader {
 
         for y in 0..map_size.y {
             for x in 0..map_size.x {
-                let tile = get_tile_map_tile(map, "Tile Layer 1", (x, y));
+                var tile = get_tile_map_tile(map, "Tile Layer 1", (x, y));
                 
                 fun map_to_physics(tile: int) -> int {
                     if tile == -1 or tile == 0 { return T_EMPTY; }
                     return T_SOLID;
+                }
+
+                // Crate
+                if tile == 9 {
+                    world.add_solid((x, y) * 16, (16, 16));
+                    print(set_tile_map_tile(map, "Tile Layer 1", (x, y), 0));
+                    print(get_tile_map_tile(map, "Tile Layer 1", (x, y)));
+                    tile = 0;
                 }
 
                 physics_layer.colliders.push(map_to_physics(tile));
@@ -229,6 +237,12 @@ fun draw() {
     
 
     world_loader.draw();
+
+    for i in 0..world.solids.length {
+        let solid = world.solids[i];
+        //print("draw crate @ ", solid.collider.pos);
+        draw_texture_flip_frame(tex.tiles, solid.collider.pos, false, false, (16, 16, 16, 16), (#ffff));
+    }
 
     player.draw();
 }
