@@ -1,5 +1,5 @@
 {
-    "activeFile": "test.json",
+    "activeFile": "level_boxcarry2.json",
     "expandedProjectPaths": [
         "."
     ],
@@ -11,24 +11,36 @@
         },
         "level_box_trick.json": {
             "expandedObjectLayers": [
+                5,
                 2
             ],
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 267.5,
-                "y": 309.5
+                "x": 191.5,
+                "y": 279.5
             }
         },
         "level_box_trick.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_boxcarry2.json": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 192.25,
+                "y": 280.25
+            }
+        },
+        "level_boxcarry2.json#tiles": {
             "scaleInDock": 1
         },
         "level_plants1.json": {
             "scale": 1.5013392857142855,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 184.16889681831702,
-                "y": 280.083258994945
+                "x": 183.83586083853706,
+                "y": 279.41718703538515
             }
         },
         "level_plants1.json#tiles": {
@@ -85,8 +97,8 @@
             "scale": 2.4126041666666667,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 171.80605327921938,
-                "y": 113.36298087301932
+                "x": 240.1968826907301,
+                "y": 160.20033677302362
             }
         },
         "test.json#tiles": {
@@ -102,13 +114,19 @@
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "openFiles": [
-        "test.json"
+        "level_plants1.json",
+        "test.json",
+        "level_boxcarry2.json",
+        "level_box_trick.json"
     ],
     "project": "horsegame.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "level_template",
+        "level_plants1.json",
         "test.json",
+        "level_box_trick.json",
+        "level_boxcarry2.json",
+        "level_template",
         "tiles.tsx"
     ],
     "tileset.embedInMap": true,
