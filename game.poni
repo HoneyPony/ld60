@@ -50,7 +50,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), (16, 16));
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_testing.json");
+    world_loader.load_world("level/level_plants1.json");
 }
 
 class CameraController {
@@ -112,6 +112,14 @@ class Animation {
     fun get_frame() -> int { frames[frame] }
 }
 
+fun gravity(y_vel: float, dt: float) -> float {
+    y_vel += dt * 500.0;
+    if y_vel > 200 {
+        y_vel = 200;
+    }
+    y_vel
+}
+
 class Player {
     // Note to self: it could be useful to have some way to have a variable that we can somehow
     // initialize in a safe way, so that we don't need these dummy values to keep it non-nullable...
@@ -123,20 +131,30 @@ class Player {
 
     let run_anim = new Animation { frames: [1, 2], frame_duration: 0.1 };
 
+    var jump_timer: float = 0;
+
     fun update_dt(dt: float) {
+        let JUMP_VEL = -200.0;
+        let JUMP_TIMER_MAX = 0.18;
+
         run_anim.update_dt(dt);
 
         let on_ground = actor.collider.on_ground; //world.collide_check(actor, actor.collider.pos + (0, 1));
         let on_ceiling = actor.collider.on_ceiling;//world.collide_check(actor, actor.collider.pos - (0, 1));
 
         let use_h_frame = if not on_ground {
-            speed.y += dt * 500.0;
+            speed.y = gravity(speed.y, dt);
             frame = if speed.y > 0 { 4 } else { 3 };
             false
         } else { true };
 
         if on_ceiling and speed.y < 0 {
             speed.y = 0;
+        }
+
+        // If we ever bonk, kill the jump.
+        if speed.y >= 0 {
+            jump_timer = 0;
         }
 
         if is_key_down(K_LEFT) {
@@ -161,7 +179,17 @@ class Player {
         }
 
         if key_space.is_just_pressed and on_ground {
-            speed.y = -300;
+            jump_timer = JUMP_TIMER_MAX;
+        }
+
+        if jump_timer > 0 {
+            speed.y = JUMP_VEL;
+            jump_timer -= dt;
+
+            if not key_space.is_down {
+                jump_timer = 0;
+                speed.y *= 0.5;
+            }
         }
 
         world.move_h(actor, speed.x * dt);
@@ -208,7 +236,7 @@ class Crate {
         let on_ground = actor.collider.on_ground; 
         if on_ground { speed.y = 0; }
         else {
-            speed.y += dt * 500;
+            speed.y = gravity(speed.y, dt);
         }
 
         world.move_v(actor, speed.y * dt, true);
