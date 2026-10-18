@@ -10,11 +10,14 @@
             "scaleInEditor": 16
         },
         "level_box_trick.json": {
-            "scale": 3,
-            "selectedLayer": 1,
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 186.16666666666663,
-                "y": 381.16666666666663
+                "x": 267.5,
+                "y": 309.5
             }
         },
         "level_box_trick.json#tiles": {

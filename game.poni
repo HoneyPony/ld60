@@ -52,7 +52,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_plants1.json");
+    world_loader.load_world("level/level_boxcarry1.json");
 }
 
 class CameraController {
