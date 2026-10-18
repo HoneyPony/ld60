@@ -153,9 +153,18 @@ class Crate {
 
 class MovingPlatform {
     let solid: Solid;
+    let start_point: vec2;
+    let end_point: vec2;
+    let speed: float;
 
     fun update_dt(dt: float) {
-        world.solid_move(solid, (dt * 50, 0));
+        // How do we decide when to move back, etc...?
+        let motion = end_point - start_point;
+        var frame_motion = norm2(motion) * speed * dt;
+        if len2(frame_motion) > len2(motion) {
+            frame_motion = motion;
+        }
+        world.solid_move(solid, frame_motion);
     }
 
     fun draw() {
@@ -221,14 +230,33 @@ class WorldLoader {
                     tile = 0;
                 }
 
-                if tile == 17 {
-                    let solid = world.add_solid((x, y) * 16, (16, 16));
-                    moving_platforms.push(new MovingPlatform { solid: solid });
-                    set_tile_map_tile(map, "Tile Layer 1", (x, y), 0);
-                    tile = 0;
-                }
+                // if tile == 17 {
+                //     let solid = world.add_solid((x, y) * 16, (16, 16));
+                //     moving_platforms.push(new MovingPlatform { solid: solid });
+                //     set_tile_map_tile(map, "Tile Layer 1", (x, y), 0);
+                //     tile = 0;
+                // }
 
                 physics_layer.colliders.push(map_to_physics(tile));
+            }
+        }
+
+        let count = tiledobj_get_count(map, "moving");
+        for i in 0..count {
+            let type = tiledobj_get_tile_id(map, "moving", i);
+            if type == 18 {
+                let offset_x = tiledobj_get_property_float(map, "moving", i, "offset_x");
+                let offset_y = tiledobj_get_property_float(map, "moving", i, "offset_y");
+                let speed = tiledobj_get_property_float(map, "moving", i, "speed");
+                let pos = tiledobj_get_position(map, "moving", i);
+
+                let solid = world.add_solid(pos, (16, 16));
+                moving_platforms.push(new MovingPlatform {
+                    solid: solid,
+                    start_point: pos,
+                    end_point: pos + (offset_x, offset_y) * 16,
+                    speed: speed * 16,
+                });
             }
         }
     }
