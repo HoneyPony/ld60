@@ -240,21 +240,21 @@
          "name":"text",
          "objects":[
                 {
-                 "height":21.78125,
+                 "height":51.78125,
                  "id":14,
                  "name":"",
                  "opacity":1,
                  "rotation":0,
                  "text":
                     {
-                     "text":"press r to restart",
+                     "text":"press r to reset the level",
                      "wrap":true
                     },
                  "type":"",
                  "visible":true,
-                 "width":160.052083333333,
-                 "x":96.3333333333333,
-                 "y":428.666666666667
+                 "width":204.052083333333,
+                 "x":81.6666666666666,
+                 "y":430
                 }],
          "opacity":1,
          "type":"objectgroup",

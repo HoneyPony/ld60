@@ -54,7 +54,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_boxpush1.json");
+    world_loader.load_world("level/level_box_trick.json");
 }
 
 class CameraController {
@@ -115,9 +115,10 @@ class Key {
 }
 
 let key_space = new Key { keycode: K_SPACE };
-let key_e = new Key { keycode: K_E };
+let key_x = new Key { keycode: K_X };
 let key_r = new Key { keycode: K_R };
-let keys = [key_space, key_e, key_r];
+let key_z = new Key { keycode: K_Z };
+let keys = [key_space, key_x, key_r, key_z];
 
 class Animation {
     let frames: Array[int];
@@ -212,7 +213,7 @@ class Player {
             }
         }
 
-        if key_space.is_just_pressed and coyote_time > 0 {
+        if (key_space.is_just_pressed or key_z.is_just_pressed) and coyote_time > 0 {
             jump_timer = JUMP_TIMER_MAX;
         }
         if coyote_time > 0 {
@@ -223,7 +224,7 @@ class Player {
             speed.y = JUMP_VEL;
             jump_timer -= dt;
 
-            if not key_space.is_down {
+            if not (key_space.is_down or key_z.is_down) {
                 jump_timer = 0;
                 speed.y *= 0.5;
             }
@@ -232,7 +233,7 @@ class Player {
         world.move_h(actor, speed.x * dt);
         world.move_v(actor, speed.y * dt, true);
 
-        if key_e.is_just_pressed {
+        if key_x.is_just_pressed {
             // Try to eat a carrot.
             eat_carrot();
         }
@@ -267,9 +268,6 @@ class Player {
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
         var offset_from_16 = ((16 - PLAYER_ACTOR_SIZE.x) / 2, 16 - PLAYER_ACTOR_SIZE.y);
         draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
-
-        draw_text_font("hello world",
-            main_font, actor.collider.pos, 16, (#000f));
     }
 }
 
