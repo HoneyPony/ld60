@@ -176,9 +176,38 @@ class World {
                 // TODO: squishers...?
             }
 
-            self.move_v(pushing_actors[i], move.y, false);
+            let squished = not self.move_v(pushing_actors[i], move.y, false);
             if collider.remainder.y < 0 {
                 pushing_actors[i].collider.on_ground_mp = true;
+            }
+            if squished {
+                // Attempt to squeeze the actor somewhere, based on where it is located relative
+                // to us.
+                let actor = pushing_actors[i];
+                let actor_center = actor.collider.pos + actor.collider.size / 2;
+                let my_center = collider.pos + collider.size / 2;
+                var dist = actor_center.x - my_center.x;
+                if dist < 0 {
+                    if dist >= -4 {
+                        // Try to push it back onto ourselves.
+                        self.move_h_no_riders(actor, -dist);
+                    }
+                    else {
+                        // Try to push it to the left.
+                        if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - collider.size.x / 2) {
+                            // It couldn't be squeezed out. Uh oh!
+                        }
+                    }
+                }
+                else {
+                    if dist <= 4 {
+                        self.move_h_no_riders(actor, -dist);
+                    }
+                    else {
+                        if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - collider.size.x / 2) {
+                        }
+                    }
+                }
             }
         }
         //collider.collidable = true;
@@ -545,10 +574,14 @@ class World {
     }
 
     fun move_h(actor: Actor, dx: float) -> bool {
-        move_h_impl(actor, dx, [], true);
+        move_h_impl(actor, dx, [], true, true);
     }
 
-    fun move_h_impl(actor: Actor, dx: float, banned_orig: DynArray[Actor], move_root: bool) -> bool {
+    fun move_h_no_riders(actor: Actor, dx: float) -> bool {
+        move_h_impl(actor, dx, [], true, false);
+    }
+
+    fun move_h_impl(actor: Actor, dx: float, banned_orig: DynArray[Actor], move_root: bool, enable_riders: bool) -> bool {
         
 
         let col = actor.collider;
@@ -574,26 +607,28 @@ class World {
                     
                     // Figure out final set of riders and recursively move them
                     // var final_riders: DynArray[Actor] = [];
-                    for i in 0..riders.length {
-                        var is_rider = true;
-                        for j in 0..discovered.length {
-                            if discovered[j] == riders[i] {
-                                is_rider = false;
-                                break;
+                    if enable_riders {
+                        for i in 0..riders.length {
+                            var is_rider = true;
+                            for j in 0..discovered.length {
+                                if discovered[j] == riders[i] {
+                                    is_rider = false;
+                                    break;
+                                }
                             }
-                        }
 
-                        // for j in 0..banned.length {
-                        //     if banned[j] == riders[i] {
-                        //         is_rider = false;
-                        //         break;
-                        //     }
-                        // }
+                            // for j in 0..banned.length {
+                            //     if banned[j] == riders[i] {
+                            //         is_rider = false;
+                            //         break;
+                            //     }
+                            // }
 
-                        if is_rider {
-                            // Handle rider. Ban existing discovered boxes.
-                            move_h_impl(riders[i], sign, [], false);
-                            banned.push(riders[i]);
+                            if is_rider {
+                                // Handle rider. Ban existing discovered boxes.
+                                move_h_impl(riders[i], sign, [], false, true);
+                                banned.push(riders[i]);
+                            }
                         }
                     }
                 }
