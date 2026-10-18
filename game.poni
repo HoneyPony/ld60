@@ -359,11 +359,30 @@ class WorldLoader {
                 });
             }
         }
+
+        let count = tiledobj_get_count(map, "player");
+        for i in 0..count {
+            // Assume that these objects are all the player spawn postiion.
+            let pos = tiledobj_get_position(map, "player", i) + (0, -16); // Fix to janky tiled coordinates
+            player.actor.collider.pos = pos;
+        }
     }
 
     fun draw_bg() {
         let map = cur_map else return;
         let size = map_size * 16;
+
+        // Draw a bordering black rectangle around the entire map.
+        // This is so we don't have to manually set this up in Tiled.
+        let TILE_DARK_BORDER = (#1c1c1bff);
+        let BORDER_SIZE = 16 * 32;
+        // left and right strips
+        draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        draw_rectangle((size.x, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        // top and bottom strips
+        draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
+        draw_rectangle((-BORDER_SIZE, size.y), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
+
         draw_map(map, "bg", (0, 0, size.x, size.y));
     }
 
