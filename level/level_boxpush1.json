@@ -233,9 +233,37 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"text",
+         "objects":[
+                {
+                 "height":21.78125,
+                 "id":14,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "text":
+                    {
+                     "text":"press r to restart",
+                     "wrap":true
+                    },
+                 "type":"",
+                 "visible":true,
+                 "width":160.052083333333,
+                 "x":96.3333333333333,
+                 "y":428.666666666667
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":7,
- "nextobjectid":14,
+ "nextlayerid":8,
+ "nextobjectid":15,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",

@@ -1,5 +1,7 @@
 let MAIN_LAYER: StrBuf = "main";
 
+let main_font = { set_default_filter_mode(FILTER_NEAREST); load_font("fonts/cairopixel.medium.ttf"); };
+
 let screen = new Screen {
     bg_color: (#cef9ffff),
     target_size: (320, 240)//(240, 180)
@@ -265,6 +267,9 @@ class Player {
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
         var offset_from_16 = ((16 - PLAYER_ACTOR_SIZE.x) / 2, 16 - PLAYER_ACTOR_SIZE.y);
         draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
+
+        draw_text_font("hello world",
+            main_font, actor.collider.pos, 16, (#000f));
     }
 }
 
@@ -339,10 +344,19 @@ class PlantDetectV {
     }
 }
 
+class TextObject {
+    var text: StrBuf;
+    var pos: vec2;
+
+    fun draw() {
+        draw_text_font(text, main_font, pos, 16, (#000f));
+    }
+}
 
 var crates: DynArray[Crate] = [];
 var moving_platforms: DynArray[MovingPlatform] = [];
 var plant_detect_v: DynArray[PlantDetectV] = [];
+var text_objects: DynArray[TextObject] = [];
 
 class WorldLoader {
     var pending: StringLoader? = nil;
@@ -395,6 +409,7 @@ class WorldLoader {
         crates = [];
         moving_platforms = [];
         plant_detect_v = [];
+        text_objects = [];
 
         camera_controller.x_bound.0 = 0;
         camera_controller.x_bound.1 = map_size.x * 16;
@@ -511,6 +526,18 @@ class WorldLoader {
             let pos = tiledobj_get_position(map, "player", i) + (0, -16); // Fix to janky tiled coordinates
             player.actor.collider.pos = pos;
         }
+
+        let count = tiledobj_get_count(map, "text");
+        for i in 0..count {
+            // Assume that these objects are all the player spawn postiion.
+            let pos = round2(tiledobj_get_position(map, "text", i) + (0, 12));
+            let text = tiledobj_get_text(map, "text", i) else continue;
+
+            text_objects.push(new TextObject {
+                pos: pos,
+                text: text,
+            })
+        }
     }
 
     fun draw_bg() {
@@ -571,6 +598,10 @@ fun update_dt(dt: float) {
 }
 
 fun draw() {
+    if is_font_loaded(main_font) {
+        set_font_filter_mode(main_font, FILTER_NEAREST);
+    }
+
     //screen.target_offset = -(player.actor.collider.pos + (8, 8));
     camera_controller.ready_draw((player.actor.collider.pos + (8, 8)));
     screen.update();
@@ -595,6 +626,11 @@ fun draw() {
     
 
     world_loader.draw();
+
+    for i in 0..text_objects.length {
+        text_objects[i].draw();
+    }
+
 
     for i in 0..moving_platforms.length {
         moving_platforms[i].draw();
