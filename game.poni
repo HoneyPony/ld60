@@ -35,6 +35,7 @@ fun init_world() {
     world.layers.push(physics_layer);
 
     player.actor = world.add_actor((0, -40), (16, 16));
+    player.actor.collider.moveable_by_actors = false;
 
     world_loader.load_world("level/test.json");
 }
@@ -87,8 +88,8 @@ class Player {
     fun update_dt(dt: float) {
         run_anim.update_dt(dt);
 
-        let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
-        let on_ceiling = world.collide_check(actor, actor.collider.pos - (0, 1));
+        let on_ground = actor.collider.on_ground; //world.collide_check(actor, actor.collider.pos + (0, 1));
+        let on_ceiling = false;//world.collide_check(actor, actor.collider.pos - (0, 1));
 
         let use_h_frame = if not on_ground {
             speed.y += dt * 500.0;
@@ -140,7 +141,7 @@ class Crate {
     var speed: vec2 = (0, 0);
 
     fun update_dt(dt: float) {
-        let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
+        let on_ground = actor.collider.on_ground; 
         if on_ground { speed.y = 0; }
         else {
             speed.y += dt * 500;
