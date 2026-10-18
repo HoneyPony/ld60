@@ -94,7 +94,7 @@ class Player {
         run_anim.update_dt(dt);
 
         let on_ground = actor.collider.on_ground; //world.collide_check(actor, actor.collider.pos + (0, 1));
-        let on_ceiling = false;//world.collide_check(actor, actor.collider.pos - (0, 1));
+        let on_ceiling = actor.collider.on_ceiling;//world.collide_check(actor, actor.collider.pos - (0, 1));
 
         let use_h_frame = if not on_ground {
             speed.y += dt * 500.0;
@@ -240,6 +240,9 @@ class WorldLoader {
                     if tile == -1 or tile == 0 { return T_EMPTY; }
                     if tile >= 24 and tile <= 31 {
                         return T_EMPTY;
+                    }
+                    if tile >= 32 and tile <= 39 {
+                        return T_SOLID_THIN;
                     }
                     return T_SOLID;
                 }

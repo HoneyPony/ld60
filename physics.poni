@@ -4,6 +4,8 @@ let T_SOLID = 1;
 let T_JUMP_THROUGH = 2;
 let T_COLLIDER = 3;
 
+let T_SOLID_THIN = 4;
+
 fun tile_or(s: int, other: int) -> int {
     if s == T_EMPTY and other == T_EMPTY { return T_EMPTY; }
     if s == T_JUMP_THROUGH and other == T_JUMP_THROUGH { return T_JUMP_THROUGH; }
@@ -39,6 +41,7 @@ class Collider {
     var seen_wood: bool = false;
 
     var on_ground: bool = false;
+    var on_ceiling: bool = false;
 
     var moveable_by_actors: bool = true;
 
@@ -182,9 +185,9 @@ class World {
             let layer_tag = layer.tag;
 
             let layer_height = layer.colliders.length / layer_width + 1;
-            fun check(pos: vec2) -> int {
-                let y = floor(pos.y / tile_height);
-                let x = floor(pos.x / tile_width);
+            fun check(check_pos: vec2) -> int {
+                let y = floor(check_pos.y / tile_height);
+                let x = floor(check_pos.x / tile_width);
 
                 let ix = y * layer_width + x;
                 if y >= 0
@@ -196,7 +199,22 @@ class World {
                     and layer_tag == tag
                     and layer.colliders[ix] != T_EMPTY
                 {
-                    return layer.colliders[ix];
+                    let collider = layer.colliders[ix];
+                    if collider == T_SOLID_THIN {
+                        // Check against the collision shape of the thin collider.
+                        let rect = (x * 16, y * 16, 16, 6);
+                        // NOTE: originally had (pos, size * 16). I wonder if a promotion
+                        // from (vec2, vec2) or (vec2, vec2i) -> vec4 would make sense... it
+                        // is very natural.
+                        if rect_overlaps(rect, (pos.x, pos.y, size.x, size.y)) {
+                            return T_SOLID;
+                        }
+                        else {
+                            return T_EMPTY;
+                        }
+                    }
+
+                    return collider;
                 }
                 T_EMPTY;
             };
@@ -279,6 +297,7 @@ class World {
         col.remainder.y += dy;
 
         col.on_ground = false;
+        col.on_ceiling = false;
 
         var move = round(col.remainder.y);
         if move != 0 {
@@ -300,6 +319,9 @@ class World {
                 else {
                     if sign > 0 {
                         col.on_ground = true;
+                    }
+                    if sign < 0 {
+                        col.on_ceiling = true;
                     }
                     return false;
                 }
