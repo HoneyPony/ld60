@@ -1,3 +1,5 @@
+let MAIN_LAYER: StrBuf = "Tile Layer 1";
+
 let screen = new Screen {
     bg_color: (#7d8777ff),
     target_size: (240, 180)
@@ -55,7 +57,8 @@ class Key {
 }
 
 let key_space = new Key { keycode: K_SPACE };
-let keys = [key_space];
+let key_e = new Key { keycode: K_E };
+let keys = [key_space, key_e];
 
 class Animation {
     let frames: Array[int];
@@ -128,6 +131,22 @@ class Player {
 
         world.move_h(actor, speed.x * dt, []);
         world.move_v(actor, speed.y * dt);
+
+        if key_e.is_just_pressed {
+            // Try to eat a carrot.
+            eat_carrot();
+        }
+    }
+
+    fun eat_carrot() {
+        let map = world_loader.cur_map else return;
+        let pos = round2(actor.collider.pos / 16);
+        let tile = get_tile_map_tile(map, MAIN_LAYER, pos);
+
+        if tile == 27 {
+            // Eat the carrot.
+            set_tile_map_tile(map, MAIN_LAYER, pos, 24);
+        }
     }
 
     fun draw() {
@@ -217,6 +236,9 @@ class WorldLoader {
                 
                 fun map_to_physics(tile: int) -> int {
                     if tile == -1 or tile == 0 { return T_EMPTY; }
+                    if tile >= 24 and tile <= 31 {
+                        return T_EMPTY;
+                    }
                     return T_SOLID;
                 }
 
@@ -229,6 +251,8 @@ class WorldLoader {
                     print(get_tile_map_tile(map, "Tile Layer 1", (x, y)));
                     tile = 0;
                 }
+
+                
 
                 // if tile == 17 {
                 //     let solid = world.add_solid((x, y) * 16, (16, 16));
