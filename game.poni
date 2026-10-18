@@ -1,7 +1,7 @@
 let MAIN_LAYER: StrBuf = "Tile Layer 1";
 
 let screen = new Screen {
-    bg_color: (#7d8777ff),
+    bg_color: (#cef9ffff),
     target_size: (240, 180)
 };
 
@@ -9,6 +9,8 @@ class Textures {
     let horse1: Texture2D = load_texture("tex/horse1.png");
 
     let tiles = load_texture("tex/tiles.png");
+
+    let parallax_bg = load_texture("tex/parallax_bg.png");
 }
 
 let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
@@ -285,6 +287,12 @@ class WorldLoader {
         }
     }
 
+    fun draw_bg() {
+        let map = cur_map else return;
+        let size = map_size * 16;
+        draw_map(map, "bg", (0, 0, size.x, size.y));
+    }
+
     fun draw() {
         let map = cur_map else return;
         let size = map_size * 16;
@@ -319,8 +327,12 @@ fun update_dt(dt: float) {
 }
 
 fun draw() {
-    screen.target_offset = -player.actor.collider.pos;
+    screen.target_offset = -(player.actor.collider.pos + (8, 8));
     screen.update();
+
+    draw_texture(tex.parallax_bg, -screen.target_offset - (240, 180)/2, (#ffff));
+
+    world_loader.draw_bg();
     // let layer = world.layers[0];
     // var y = 0;
     // var ndx = 0;
