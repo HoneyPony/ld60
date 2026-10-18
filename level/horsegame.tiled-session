@@ -33,7 +33,7 @@
         "test.json"
     ],
     "project": "horsegame.tiled-project",
-    "property.type": "float",
+    "property.type": "int",
     "recentFiles": [
         "test.json",
         "tiles.tsx"

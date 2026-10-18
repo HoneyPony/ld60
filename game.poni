@@ -1,4 +1,4 @@
-let MAIN_LAYER: StrBuf = "Tile Layer 1";
+let MAIN_LAYER: StrBuf = "main";
 
 let screen = new Screen {
     bg_color: (#cef9ffff),
@@ -41,7 +41,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), (16, 16));
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/test.json");
+    world_loader.load_world("level/level_plants1.json");
 }
 
 /// Helper for key just pressed checking due to weird update() system.
@@ -132,7 +132,7 @@ class Player {
         }
 
         world.move_h(actor, speed.x * dt, []);
-        world.move_v(actor, speed.y * dt);
+        world.move_v(actor, speed.y * dt, true);
 
         if key_e.is_just_pressed {
             // Try to eat a carrot.
@@ -148,6 +148,10 @@ class Player {
         if tile == 27 {
             // Eat the carrot.
             set_tile_map_tile(map, MAIN_LAYER, pos, 24);
+
+            for i in 0..plant_detect_v.length {
+                plant_detect_v[i].carrot(pos);
+            }
         }
     }
 
@@ -168,7 +172,7 @@ class Crate {
             speed.y += dt * 500;
         }
 
-        world.move_v(actor, speed.y * dt);
+        world.move_v(actor, speed.y * dt, true);
     }
 }
 
@@ -193,8 +197,45 @@ class MovingPlatform {
     }
 }
 
+
+
+class PlantDetectV {
+    let solid: Solid;
+    let min_y: float;
+    let max_y: float;
+    let height: int;
+    let eyeball_offset: int;
+
+    var target_y: float;
+
+    fun update_dt(dt: float) {
+        // How do we decide when to move back, etc...?
+        let motion = target_y - solid.collider.pos.y;
+        var frame_motion: float = dt * 16 * 8 * signumf(motion);
+        if abs(frame_motion) > abs(motion) {
+            frame_motion = motion;
+        }
+        world.solid_move(solid, (0, frame_motion));
+    }
+
+    fun draw() {
+        for i in 0..height {
+            draw_texture_flip_frame(tex.tiles, solid.collider.pos + (0, i * 16), false, false, (32, 32, 16, 16), (#ffff));
+        }
+    }
+
+    fun carrot(tile_pos: vec2i) {
+        let pos = tile_pos * 16;
+        if pos.y >= min_y and pos.y <= max_y {
+            target_y = pos.y - eyeball_offset * 16;
+        }
+    }
+}
+
+
 var crates: DynArray[Crate] = [];
 var moving_platforms: DynArray[MovingPlatform] = [];
+var plant_detect_v: DynArray[PlantDetectV] = [];
 
 class WorldLoader {
     var pending: StringLoader? = nil;
@@ -234,7 +275,7 @@ class WorldLoader {
 
         for y in 0..map_size.y {
             for x in 0..map_size.x {
-                var tile = get_tile_map_tile(map, "Tile Layer 1", (x, y));
+                var tile = get_tile_map_tile(map, MAIN_LAYER, (x, y));
                 
                 fun map_to_physics(tile: int) -> int {
                     if tile == -1 or tile == 0 { return T_EMPTY; }
@@ -244,6 +285,9 @@ class WorldLoader {
                     if tile >= 32 and tile <= 39 {
                         return T_SOLID_THIN;
                     }
+                    if tile >= 40 and tile <= 63 {
+                        return T_EMPTY;
+                    }
                     return T_SOLID;
                 }
 
@@ -252,8 +296,8 @@ class WorldLoader {
                     //world.add_solid((x, y) * 16 + (1, 1), (14, 14));
                     let actor = world.add_actor((x, y) * 16, (16, 16));
                     crates.push(new Crate { actor: actor });
-                    print(set_tile_map_tile(map, "Tile Layer 1", (x, y), 0));
-                    print(get_tile_map_tile(map, "Tile Layer 1", (x, y)));
+                    print(set_tile_map_tile(map, MAIN_LAYER, (x, y), 0));
+                    print(get_tile_map_tile(map, MAIN_LAYER, (x, y)));
                     tile = 0;
                 }
 
@@ -287,6 +331,33 @@ class WorldLoader {
                     speed: speed * 16,
                 });
             }
+
+            if type == 19 {
+                let height = tiledobj_get_property_int(map, "moving", i, "height");
+                let max_movement_y = tiledobj_get_property_int(map, "moving", i, "max_movement_y");
+                let eyeball_offset = tiledobj_get_property_int(map, "moving", i, "eyeball_offset");
+                let pos = tiledobj_get_position(map, "moving", i);
+
+                let pos = pos + (0, -16); // Fix tiled janky coordinates
+
+                var min_y = pos.y;
+                var max_y = pos.y + max_movement_y * 16;
+                if max_movement_y < 0 {
+                    let tmp = min_y;
+                    min_y = max_y;
+                    max_y = tmp;
+                }
+
+                let solid = world.add_solid(pos, (16, 16 * height));
+                plant_detect_v.push(new PlantDetectV {
+                    solid: solid,
+                    height: height,
+                    min_y: min_y,
+                    max_y: max_y,
+                    target_y: pos.y, // start at same pos
+                    eyeball_offset: eyeball_offset,
+                });
+            }
         }
     }
 
@@ -299,7 +370,7 @@ class WorldLoader {
     fun draw() {
         let map = cur_map else return;
         let size = map_size * 16;
-        draw_map(map, "Tile Layer 1", (0, 0, size.x, size.y));
+        draw_map(map, MAIN_LAYER, (0, 0, size.x, size.y));
         draw_map(map, "fg", (0, 0, size.x, size.y));
     }
 }
@@ -308,6 +379,8 @@ let world_loader = new WorldLoader{};
 
 
 fun update_dt(dt: float) {
+    world.pre_physics_step();
+
     // Update keys for is_just_pressed tracking
     for i in 0..keys.length {
         keys[i].update();
@@ -316,6 +389,9 @@ fun update_dt(dt: float) {
     // Moving platforms go before other physics objects.
     for i in 0..moving_platforms.length {
         moving_platforms[i].update_dt(dt);
+    }
+    for i in 0..plant_detect_v.length {
+        plant_detect_v[i].update_dt(dt);
     }
 
     for i in 0..crates.length {
@@ -357,6 +433,9 @@ fun draw() {
 
     for i in 0..moving_platforms.length {
         moving_platforms[i].draw();
+    }
+    for i in 0..plant_detect_v.length {
+        plant_detect_v[i].draw();
     }
 
     // for i in 0..world.solids.length {

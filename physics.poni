@@ -43,6 +43,8 @@ class Collider {
     var on_ground: bool = false;
     var on_ceiling: bool = false;
 
+    var on_ground_mp: bool = false;
+
     var moveable_by_actors: bool = true;
 
     fun rect() -> vec4 {
@@ -62,6 +64,12 @@ class World {
     var layers: DynArray[StaticTiledLayer] = [];
     var actors: DynArray[Actor] = [];
     var solids: DynArray[Solid] = [];
+
+    fun pre_physics_step() {
+        for i in 0..actors.length {
+            actors[i].collider.on_ground_mp = false; // Reset
+        }
+    }
 
     fun add_actor(pos: vec2, size: vec2i) -> Actor {
         let tile = collide_solids(pos, size);
@@ -127,7 +135,7 @@ class World {
 
         let riding_rect: vec4 = (collider.pos.x, collider.pos.y - 1,
             collider.size.x, 1);
-        let pushing_rect: vec4 = (collider.pos.x + move.x, collider.pos.y,
+        let pushing_rect: vec4 = (collider.pos.x + move.x, collider.pos.y + move.y,
             collider.size.x, collider.size.y);
         
         for i in 0..self.actors.length {
@@ -156,11 +164,21 @@ class World {
         //collider.collidable = false;
         for i in 0..riding_actors.length {
             self.move_h(riding_actors[i], move.x, []);
+            self.move_v(riding_actors[i], move.y, false);
+
+            if collider.remainder.y < 0 {
+                riding_actors[i].collider.on_ground_mp = true;
+            }
         }
         for i in 0..pushing_actors.length {
             let squished = not self.move_h(pushing_actors[i], move.x, []);
             if squished {
                 // TODO: squishers...?
+            }
+
+            self.move_v(pushing_actors[i], move.y, false);
+            if collider.remainder.y < 0 {
+                pushing_actors[i].collider.on_ground_mp = true;
             }
         }
         //collider.collidable = true;
@@ -292,12 +310,16 @@ class World {
         }
     }
 
-    fun move_v(actor: Actor, dy: float) -> bool {
+    fun move_v(actor: Actor, dy: float, update_flags: bool) -> bool {
         let col = actor.collider;
         col.remainder.y += dy;
 
-        col.on_ground = false;
-        col.on_ceiling = false;
+        if update_flags {
+            col.on_ground = col.on_ground_mp; // Reset to state from moving platform
+            col.on_ceiling = false;
+        }
+
+        // print("initial: ", col.on_ground);
 
         var move = round(col.remainder.y);
         if move != 0 {
@@ -315,13 +337,18 @@ class World {
                     // if sign < 0 {
                     //     col.on_ground = false;
                     // }
+                    // if sign > 0 {
+                    //     col.on_ceiling = false;
+                    // }
                 }
                 else {
-                    if sign > 0 {
-                        col.on_ground = true;
-                    }
-                    if sign < 0 {
-                        col.on_ceiling = true;
+                    if update_flags {
+                        if sign > 0 {
+                            col.on_ground = true;
+                        }
+                        if sign < 0 {
+                            col.on_ceiling = true;
+                        }
                     }
                     return false;
                 }
@@ -349,6 +376,21 @@ class World {
                 // else {
                 //     return false;
                 // }
+            }
+        }
+
+        else {
+            // Couldn't update floor/ceiling flags with movement, update them
+            // with raycasts.
+            var discovered: DynArray[Actor] = [];
+            // Ground.
+            if not try_move_v(actor, 1, discovered) {
+                col.on_ground = true;
+            }
+
+            discovered = [];
+            if not try_move_v(actor, -1, discovered) {
+                col.on_ceiling = true;
             }
         }
 
@@ -524,6 +566,10 @@ fun signumf(x: float) -> int {
     if x > 0 { return 1; }
     if x < 0 { return -1; }
     return 0;
+}
+
+fun abs(x: float) -> float {
+    if x < 0 { -x } else { x }
 }
 
 fun rect_overlaps(a: vec4, b: vec4) -> bool {
