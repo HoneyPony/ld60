@@ -315,6 +315,51 @@ class World {
         nil
     }
 
+    fun try_move_h(actor: Actor, delta: float, discovered: DynArray[Actor]) -> bool {
+        let col = actor.collider;
+        let sign = signumf(delta);
+
+        let tile = collide_solids(col.pos + (delta, 0), col.size);
+        print("got tile ", tile);
+
+        // if tile == T_JUMP_THROUGH {
+        //     col.descent = true;
+        //     col.seen_wood = true;
+        // }
+        if tile == T_EMPTY or tile == T_JUMP_THROUGH {
+            var result = true;
+            discovered.push(actor);
+
+            // This actor succeeded the move so far. Now check all children in chain.
+            for i in 0..actors.length {
+                let candidate = actors[i];
+
+                var check = true;
+                for j in 0..discovered.length {
+                    if print(candidate == discovered[j], " <--") {
+                        check = false;
+                        break;
+                    }
+                }
+
+                print("check = ", check);
+                if check
+                    and signumf(actors[i].collider.pos.x - col.pos.x) == sign
+                    and rect_overlaps(candidate.collider.rect(), actor.collider.rect_trim_y()) {
+                    let t = try_move_h(candidate, delta, discovered);      
+                    result = result and t; 
+                    if not result { break; } 
+                }
+            }
+
+            return result;
+        }
+        else {
+            // This actor failed the move.
+            return false;
+        }
+    }
+
     fun move_h(actor: Actor, dx: float, chain: DynArray[Actor]) -> bool {
         
 
@@ -322,37 +367,50 @@ class World {
         col.remainder.x += dx;
 
         var move = round(col.remainder.x);
+
         if move != 0 {
             col.remainder.x -= move;
             let sign = signum(move);
 
             while move != 0 {
-                chain.push(actor);
-                let in_way = collide_actors_h(actor, col.pos + (sign, 0), sign, col.size, chain);
-                
-                var tile = T_EMPTY;
-                if in_way.is_some() {
-                    let in_way = in_way.or_panic();
-                    if not move_h(in_way, sign, chain) {
-                        tile = T_COLLIDER;
+                var discovered: DynArray[Actor] = [];
+                print("len = ", discovered.length);
+                if print(try_move_h(actor, sign, discovered)) {
+                    print("!!! ", discovered.length);
+                    for i in 0..discovered.length {
+                        discovered[i].collider.pos.x += sign;
                     }
-                }
-                chain.pop_or_panic();
-
-                if tile != T_COLLIDER {
-                    tile = collide_solids(col.pos + (sign, 0), col.size);
-                }
-                if tile == T_JUMP_THROUGH {
-                    col.descent = true;
-                    col.seen_wood = true;
-                }
-                if tile == T_EMPTY or tile == T_JUMP_THROUGH {
-                    col.pos.x += sign;
                     move -= sign;
                 }
                 else {
                     return false;
                 }
+                // chain.push(actor);
+                // let in_way = collide_actors_h(actor, col.pos + (sign, 0), sign, col.size, chain);
+                
+                // var tile = T_EMPTY;
+                // if in_way.is_some() {
+                //     let in_way = in_way.or_panic();
+                //     if not move_h(in_way, sign, chain) {
+                //         tile = T_COLLIDER;
+                //     }
+                // }
+                // chain.pop_or_panic();
+
+                // if tile != T_COLLIDER {
+                //     tile = collide_solids(col.pos + (sign, 0), col.size);
+                // }
+                // if tile == T_JUMP_THROUGH {
+                //     col.descent = true;
+                //     col.seen_wood = true;
+                // }
+                // if tile == T_EMPTY or tile == T_JUMP_THROUGH {
+                //     col.pos.x += sign;
+                //     move -= sign;
+                // }
+                // else {
+                //     return false;
+                // }
             }
         }
 
