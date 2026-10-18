@@ -204,7 +204,7 @@ class World {
                         self.move_h_no_riders(actor, -dist);
                     }
                     else {
-                        if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - collider.size.x / 2) {
+                        if not self.move_h_no_riders(actor, -dist + actor.collider.size.x / 2 + collider.size.x / 2) {
                         }
                     }
                 }
@@ -324,11 +324,14 @@ class World {
         T_EMPTY
     }
 
-    fun try_move_v(actor: Actor, delta: float, discovered: DynArray[Actor]) -> bool {
+    fun try_move_v(actor: Actor, delta: float, discovered: DynArray[Actor], riders: DynArray[Actor]) -> bool {
         let col = actor.collider;
         let sign = signumf(delta);
 
         let tile = collide_solids(col.pos + (0, delta), col.size);
+
+        let riding_rect: vec4 = (col.pos.x + col.size.x / 4, col.pos.y - 1,
+                col.size.x / 2, 1);
 
         // TODO: descent, etc.
 
@@ -352,9 +355,31 @@ class World {
                     and signumf(actors[i].collider.pos.y - col.pos.y) == sign
                     and rect_overlaps(candidate.collider.rect(), actor.collider.rect_trim_x()) {
 
-                    let t = candidate.collider.moveable_by_actors and try_move_v(candidate, delta, discovered);      
+                    let t = candidate.collider.moveable_by_actors and try_move_v(candidate, delta, discovered, riders);      
                     result = result and t; 
                     if not result { break; } 
+                }
+
+                let rider_rect: vec4 = (
+                    candidate.collider.pos.x,
+                    candidate.collider.pos.y + candidate.collider.size.y,
+                    candidate.collider.size.x,
+                    1.0
+                );
+                if rect_overlaps(riding_rect, rider_rect) {
+                    //print("found rider");
+                    // Found rider
+                    var exists = false;
+                    for j in 0..riders.length {
+                        if riders[j] == candidate {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if not exists {
+                        riders.push(candidate);
+                    }
                 }
             }
 
@@ -366,7 +391,7 @@ class World {
         }
     }
 
-    fun move_v(actor: Actor, dy: float, update_flags: bool) -> bool {
+    fun move_v_impl(actor: Actor, dy: float, update_flags: bool, enable_riders: bool) -> bool {
         let col = actor.collider;
         col.remainder.y += dy;
 
@@ -385,7 +410,8 @@ class World {
             while move != 0 {
                 // TODO: Descent etc.
                 var discovered: DynArray[Actor] = [];
-                if try_move_v(actor, sign, discovered) {
+                var riders: DynArray[Actor] = [];
+                if try_move_v(actor, sign, discovered, riders) {
                     for i in 0..discovered.length {
                         discovered[i].collider.pos.y += sign;
                     }
@@ -396,6 +422,31 @@ class World {
                     // if sign > 0 {
                     //     col.on_ceiling = false;
                     // }
+
+                    if enable_riders {
+                        for i in 0..riders.length {
+                            var is_rider = true;
+                            for j in 0..discovered.length {
+                                if discovered[j] == riders[i] {
+                                    is_rider = false;
+                                    break;
+                                }
+                            }
+
+                            // for j in 0..banned.length {
+                            //     if banned[j] == riders[i] {
+                            //         is_rider = false;
+                            //         break;
+                            //     }
+                            // }
+
+                            if is_rider {
+                                // Handle rider. Ban existing discovered boxes.
+                                move_v_impl(riders[i], sign, update_flags, true);
+                                //banned.push(riders[i]);
+                            }
+                        }
+                    }
                 }
                 else {
                     if update_flags {
@@ -439,13 +490,15 @@ class World {
             // Couldn't update floor/ceiling flags with movement, update them
             // with raycasts.
             var discovered: DynArray[Actor] = [];
+            var riders: DynArray[Actor] = [];
             // Ground.
-            if not try_move_v(actor, 1, discovered) {
+            if not try_move_v(actor, 1, discovered, riders) {
                 col.on_ground = true;
             }
 
             discovered = [];
-            if not try_move_v(actor, -1, discovered) {
+            riders = [];
+            if not try_move_v(actor, -1, discovered, riders) {
                 col.on_ceiling = true;
             }
         }
@@ -457,6 +510,10 @@ class World {
         }
 
         true
+    }
+
+    fun move_v(actor: Actor, dy: float, update_flags: bool) -> bool {
+        move_v_impl(actor, dy, update_flags, true);
     }
 
     fun collide_actors_h(mover: Actor, pos: vec2, sign: int, size: vec2i, chain: DynArray[Actor]) -> Actor? {
