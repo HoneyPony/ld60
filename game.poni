@@ -300,6 +300,7 @@ class WorldLoader {
         let map = cur_map else return;
         let size = map_size * 16;
         draw_map(map, "Tile Layer 1", (0, 0, size.x, size.y));
+        draw_map(map, "fg", (0, 0, size.x, size.y));
     }
 }
 
