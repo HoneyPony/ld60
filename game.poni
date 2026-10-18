@@ -2,7 +2,7 @@ let MAIN_LAYER: StrBuf = "main";
 
 let screen = new Screen {
     bg_color: (#cef9ffff),
-    target_size: (240, 180)
+    target_size: (320, 240)//(240, 180)
 };
 
 class Textures {
@@ -70,6 +70,9 @@ class CameraController {
         var y = player_pos.y;
         if x < min_x { x = min_x; }
         if x > max_x { x = max_x; }
+        if max_x < min_x {
+            x = (min_x + max_x) / 2;
+        }
 
         if y < min_y { y = min_y; }
         if y > max_y { y = max_y; }
