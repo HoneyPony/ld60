@@ -50,7 +50,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), (16, 16));
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_plants1.json");
+    world_loader.load_world("level/level_testing.json");
 }
 
 class CameraController {
@@ -164,7 +164,7 @@ class Player {
             speed.y = -300;
         }
 
-        world.move_h(actor, speed.x * dt, []);
+        world.move_h(actor, speed.x * dt);
         world.move_v(actor, speed.y * dt, true);
 
         if key_e.is_just_pressed {

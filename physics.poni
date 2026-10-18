@@ -163,7 +163,7 @@ class World {
 
         //collider.collidable = false;
         for i in 0..riding_actors.length {
-            self.move_h(riding_actors[i], move.x, []);
+            self.move_h(riding_actors[i], move.x);
             self.move_v(riding_actors[i], move.y, false);
 
             if collider.remainder.y < 0 {
@@ -171,7 +171,7 @@ class World {
             }
         }
         for i in 0..pushing_actors.length {
-            let squished = not self.move_h(pushing_actors[i], move.x, []);
+            let squished = not self.move_h(pushing_actors[i], move.x);
             if squished {
                 // TODO: squishers...?
             }
@@ -472,11 +472,20 @@ class World {
         nil
     }
 
-    fun try_move_h(actor: Actor, delta: float, discovered: DynArray[Actor]) -> bool {
+    fun try_move_h(actor: Actor, delta: float, discovered: DynArray[Actor], riders: DynArray[Actor], banned: DynArray[Actor]) -> bool {
+        for i in 0..banned.length {
+            if actor == banned[i] {
+                return true; // This one already moved.
+            }
+        }
+
         let col = actor.collider;
         let sign = signumf(delta);
 
         let tile = collide_solids(col.pos + (delta, 0), col.size);
+
+        let riding_rect: vec4 = (col.pos.x + col.size.x / 4, col.pos.y - 1,
+                col.size.x / 2, 1);
 
         if tile == T_EMPTY or tile == T_JUMP_THROUGH {
             var result = true;
@@ -497,9 +506,33 @@ class World {
                 if check
                     and signumf(actors[i].collider.pos.x - col.pos.x) == sign
                     and rect_overlaps(candidate.collider.rect(), actor.collider.rect_trim_y()) {
-                    let t = candidate.collider.moveable_by_actors and try_move_h(candidate, delta, discovered);      
+                    let t = candidate.collider.moveable_by_actors and try_move_h(candidate, delta, discovered, riders, banned);      
                     result = result and t; 
                     if not result { break; } 
+                }
+
+                // Look for riders
+
+                let rider_rect: vec4 = (
+                    candidate.collider.pos.x,
+                    candidate.collider.pos.y + candidate.collider.size.y,
+                    candidate.collider.size.x,
+                    1.0
+                );
+                if rect_overlaps(riding_rect, rider_rect) {
+                    //print("found rider");
+                    // Found rider
+                    var exists = false;
+                    for j in 0..riders.length {
+                        if riders[j] == candidate {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if not exists {
+                        riders.push(candidate);
+                    }
                 }
             }
 
@@ -511,7 +544,11 @@ class World {
         }
     }
 
-    fun move_h(actor: Actor, dx: float, chain: DynArray[Actor]) -> bool {
+    fun move_h(actor: Actor, dx: float) -> bool {
+        move_h_impl(actor, dx, [], true);
+    }
+
+    fun move_h_impl(actor: Actor, dx: float, banned_orig: DynArray[Actor], move_root: bool) -> bool {
         
 
         let col = actor.collider;
@@ -524,12 +561,41 @@ class World {
             let sign = signum(move);
 
             while move != 0 {
+                var riders: DynArray[Actor] = [];
                 var discovered: DynArray[Actor] = [];
-                if try_move_h(actor, sign, discovered) {
+                var banned = if move_root { banned_orig.clone_shallow() } else { banned_orig }; // Recursive calls push to same array
+                
+                if try_move_h(actor, sign, discovered, riders, banned) {
                     for i in 0..discovered.length {
                         discovered[i].collider.pos.x += sign;
+                        banned.push(discovered[i]);
                     }
                     move -= sign;
+                    
+                    // Figure out final set of riders and recursively move them
+                    // var final_riders: DynArray[Actor] = [];
+                    for i in 0..riders.length {
+                        var is_rider = true;
+                        for j in 0..discovered.length {
+                            if discovered[j] == riders[i] {
+                                is_rider = false;
+                                break;
+                            }
+                        }
+
+                        // for j in 0..banned.length {
+                        //     if banned[j] == riders[i] {
+                        //         is_rider = false;
+                        //         break;
+                        //     }
+                        // }
+
+                        if is_rider {
+                            // Handle rider. Ban existing discovered boxes.
+                            move_h_impl(riders[i], sign, [], false);
+                            banned.push(riders[i]);
+                        }
+                    }
                 }
                 else {
                     return false;
