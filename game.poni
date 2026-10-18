@@ -18,6 +18,8 @@ let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
 let world = new World{};
 let player = new Player{};
 
+let PLAYER_ACTOR_SIZE = (14, 9);
+
 let physics_layer = new StaticTiledLayer {
     tile_width: 16,
     tile_height: 16,
@@ -47,7 +49,7 @@ fun init_world() {
     world.layers.push(physics_layer);
     // world.layers.push(areas_layer); // Doesn't need to be in layers array
 
-    player.actor = world.add_actor((0, -40), (16, 16));
+    player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
     world_loader.load_world("level/level_box_trick.json");
@@ -93,7 +95,8 @@ class Key {
 
 let key_space = new Key { keycode: K_SPACE };
 let key_e = new Key { keycode: K_E };
-let keys = [key_space, key_e];
+let key_r = new Key { keycode: K_R };
+let keys = [key_space, key_e, key_r];
 
 class Animation {
     let frames: Array[int];
@@ -218,6 +221,10 @@ class Player {
             // Victory square, for now.
             world_loader.reload();
         }
+
+        if key_r.is_just_pressed {
+            world_loader.reload();
+        }
     }
 
     fun eat_carrot() {
@@ -237,7 +244,8 @@ class Player {
 
     fun draw() {
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
-        draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0), flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
+        var offset_from_16 = ((16 - PLAYER_ACTOR_SIZE.x) / 2, 16 - PLAYER_ACTOR_SIZE.y);
+        draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
     }
 }
 
