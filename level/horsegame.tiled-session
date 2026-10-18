@@ -5,13 +5,19 @@
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "test.json": {
             "scale": 2.4126041666666667,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 240.19688269073015,
-                "y": 220.3013686801088
+                "x": 171.80605327921938,
+                "y": 113.36298087301932
             }
+        },
+        "test.json#tiles": {
+            "scaleInDock": 1
         },
         "tiles.tsx": {
             "scaleInDock": 1,
@@ -23,7 +29,6 @@
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "openFiles": [
-        "tiles.tsx",
         "test.json"
     ],
     "project": "horsegame.tiled-project",

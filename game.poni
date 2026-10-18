@@ -151,7 +151,20 @@ class Crate {
     }
 }
 
+class MovingPlatform {
+    let solid: Solid;
+
+    fun update_dt(dt: float) {
+        world.solid_move(solid, (dt * 50, 0));
+    }
+
+    fun draw() {
+        draw_texture_flip_frame(tex.tiles, solid.collider.pos, false, false, (16, 32, 16, 16), (#ffff));
+    }
+}
+
 var crates: DynArray[Crate] = [];
+var moving_platforms: DynArray[MovingPlatform] = [];
 
 class WorldLoader {
     var pending: StringLoader? = nil;
@@ -208,6 +221,13 @@ class WorldLoader {
                     tile = 0;
                 }
 
+                if tile == 17 {
+                    let solid = world.add_solid((x, y) * 16, (16, 16));
+                    moving_platforms.push(new MovingPlatform { solid: solid });
+                    set_tile_map_tile(map, "Tile Layer 1", (x, y), 0);
+                    tile = 0;
+                }
+
                 physics_layer.colliders.push(map_to_physics(tile));
             }
         }
@@ -229,8 +249,9 @@ fun update_dt(dt: float) {
         keys[i].update();
     }
 
-    for i in 0..world.solids.length {
-        world.solid_move(world.solids[i], (dt * 10, 0));
+    // Moving platforms go before other physics objects.
+    for i in 0..moving_platforms.length {
+        moving_platforms[i].update_dt(dt);
     }
 
     for i in 0..crates.length {
@@ -265,6 +286,10 @@ fun draw() {
     
 
     world_loader.draw();
+
+    for i in 0..moving_platforms.length {
+        moving_platforms[i].draw();
+    }
 
     // for i in 0..world.solids.length {
     //     let solid = world.solids[i];

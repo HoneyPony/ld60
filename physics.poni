@@ -104,7 +104,7 @@ class World {
 
         for i in 0..solids.length {
             let solid = solids[i];
-            if solid.collider.collidable and rect_overlaps(solid.collider.rect(),
+            if solid.collider.collidable and rect_overlaps_totally(solid.collider.rect(),
                 (pos.x, pos.y, size.x, size.y))
             {
                 return T_COLLIDER;
@@ -136,21 +136,21 @@ class World {
                 actor.collider.size.x,
                 1.0
             );
-            if rect_overlaps(riding_rect, rider_rect) {
+            if rect_overlaps_totally(riding_rect, rider_rect) {
                 riding_actors.push(actor);
             }
             else {
-                if rect_overlaps(pushing_rect, actor.collider.rect()) and not actor.collider.squished {
+                if rect_overlaps_totally(pushing_rect, actor.collider.rect()) and not actor.collider.squished {
                     pushing_actors.push(actor);
                 }
             }
 
-            if not rect_overlaps(pushing_rect, actor.collider.rect()) {
+            if not rect_overlaps_totally(pushing_rect, actor.collider.rect()) {
                 // TODO: Remove squisher..?
             }
         }
 
-        collider.collidable = false;
+        //collider.collidable = false;
         for i in 0..riding_actors.length {
             self.move_h(riding_actors[i], move.x, []);
         }
@@ -160,6 +160,7 @@ class World {
                 // TODO: squishers...?
             }
         }
+        //collider.collidable = true;
 
         if move.x != 0 {
             collider.remainder.x -= move.x;
@@ -292,6 +293,9 @@ class World {
                         discovered[i].collider.pos.y += sign;
                     }
                     move -= sign;
+                    // if sign < 0 {
+                    //     col.on_ground = false;
+                    // }
                 }
                 else {
                     if sign > 0 {
@@ -510,4 +514,16 @@ fun rect_overlaps(a: vec4, b: vec4) -> bool {
         and right(a) >= left(b)
         and top(a) <= bottom(b)
         and bottom(a) >= top(b)
+}
+
+fun rect_overlaps_totally(a: vec4, b: vec4) -> bool {
+    fun left(x: vec4) -> float { return x.x; }
+    fun right(x: vec4) -> float { return x.x + x.z; }
+    fun top(x: vec4) -> float { return x.y; }
+    fun bottom(x: vec4) -> float { return x.y + x.w; }
+
+    left(a) < right(b)
+        and right(a) > left(b)
+        and top(a) < bottom(b)
+        and bottom(a) > top(b)
 }
