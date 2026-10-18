@@ -41,6 +41,14 @@ class Collider {
     fun rect() -> vec4 {
         (pos.x, pos.y, size.x, size.y)
     }
+
+    fun rect_trim_y() -> vec4 {
+        (pos.x, pos.y + 1, size.x, size.y - 2)
+    }
+
+    fun rect_trim_x() -> vec4 {
+        (pos.x + 1, pos.y, size.x - 2, size.y)
+    }
 }
 
 class World {
@@ -140,10 +148,10 @@ class World {
 
         collider.collidable = false;
         for i in 0..riding_actors.length {
-            self.move_h(riding_actors[i], move.x);
+            self.move_h(riding_actors[i], move.x, []);
         }
         for i in 0..pushing_actors.length {
-            let squished = not self.move_h(pushing_actors[i], move.x);
+            let squished = not self.move_h(pushing_actors[i], move.x, []);
             if squished {
                 // TODO: squishers...?
             }
@@ -229,10 +237,14 @@ class World {
             let sign = signum(move);
 
             while move != 0 {
-                let tile = collide_solids(
-                    col.pos + (0, sign),
-                    col.size
-                );
+                var tile = if collide_actors_v(actor, col.pos + (0, sign), col.size).is_some() { T_COLLIDER } else { T_EMPTY };
+
+                if tile == T_EMPTY {
+                    tile = collide_solids(
+                        col.pos + (0, sign),
+                        col.size
+                    );
+                }
 
                 if tile == T_JUMP_THROUGH and col.descent {
                     col.seen_wood = true;
@@ -261,7 +273,51 @@ class World {
         true
     }
 
-    fun move_h(actor: Actor, dx: float) -> bool {
+    fun collide_actors_h(mover: Actor, pos: vec2, sign: int, size: vec2i, chain: DynArray[Actor]) -> Actor? {
+        for i in 0..actors.length {
+            let actor = actors[i];
+            var check = true;
+            for j in 0..chain.length {
+                if actor == chain[j] {
+                    check = false;
+                    break;
+                }
+            }
+            if check
+                and signumf(actors[i].collider.pos.x - mover.collider.pos.x) == sign
+                and rect_overlaps(actor.collider.rect(), mover.collider.rect_trim_y()) { return actor; }
+        }
+
+        nil
+    }
+
+    fun collide_actors_v(mover: Actor, pos: vec2, size: vec2i) -> Actor? {
+        for i in 0..actors.length {
+            let actor = actors[i];
+
+            let check = actor != mover;
+            
+            if check and rect_overlaps(actor.collider.rect(), mover.collider.rect_trim_x()) { return actor; }
+        }
+
+        nil
+    }
+
+    fun collide_actors_check(mover: Actor, pos: vec2, size: vec2i) -> Actor? {
+        for i in 0..actors.length {
+            let actor = actors[i];
+
+            let check = actor != mover;
+            
+            if check and rect_overlaps(actor.collider.rect(), mover.collider.rect()) { return actor; }
+        }
+
+        nil
+    }
+
+    fun move_h(actor: Actor, dx: float, chain: DynArray[Actor]) -> bool {
+        
+
         let col = actor.collider;
         col.remainder.x += dx;
 
@@ -271,7 +327,21 @@ class World {
             let sign = signum(move);
 
             while move != 0 {
-                let tile = collide_solids(col.pos + (sign, 0), col.size);
+                chain.push(actor);
+                let in_way = collide_actors_h(actor, col.pos + (sign, 0), sign, col.size, chain);
+                
+                var tile = T_EMPTY;
+                if in_way.is_some() {
+                    let in_way = in_way.or_panic();
+                    if not move_h(in_way, sign, chain) {
+                        tile = T_COLLIDER;
+                    }
+                }
+                chain.pop_or_panic();
+
+                if tile != T_COLLIDER {
+                    tile = collide_solids(col.pos + (sign, 0), col.size);
+                }
                 if tile == T_JUMP_THROUGH {
                     col.descent = true;
                     col.seen_wood = true;
@@ -292,6 +362,10 @@ class World {
     fun collide_check(actor: Actor, pos: vec2) -> bool {
         let collider = actor.collider;
 
+        if collide_actors_v(actor, pos, collider.size).is_some() {
+            return true;
+        }
+
         let tile = collide_solids(pos, collider.size);
         if collider.descent {
             tile == T_SOLID or tile == T_COLLIDER
@@ -303,6 +377,12 @@ class World {
 }
 
 fun signum(x: int) -> int {
+    if x > 0 { return 1; }
+    if x < 0 { return -1; }
+    return 0;
+}
+
+fun signumf(x: float) -> int {
     if x > 0 { return 1; }
     if x < 0 { return -1; }
     return 0;

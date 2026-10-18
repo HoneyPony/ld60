@@ -125,7 +125,7 @@ class Player {
             speed.y = -300;
         }
 
-        world.move_h(actor, speed.x * dt);
+        world.move_h(actor, speed.x * dt, []);
         world.move_v(actor, speed.y * dt);
     }
 
@@ -134,6 +134,23 @@ class Player {
         draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0), flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
     }
 }
+
+class Crate {
+    let actor: Actor;
+    var speed: vec2 = (0, 0);
+
+    fun update_dt(dt: float) {
+        let on_ground = world.collide_check(actor, actor.collider.pos + (0, 1));
+        if on_ground { speed.y = 0; }
+        else {
+            speed.y += dt * 500;
+        }
+
+        world.move_v(actor, speed.y * dt);
+    }
+}
+
+var crates: DynArray[Crate] = [];
 
 class WorldLoader {
     var pending: StringLoader? = nil;
@@ -182,7 +199,9 @@ class WorldLoader {
 
                 // Crate
                 if tile == 9 {
-                    world.add_solid((x, y) * 16 + (1, 1), (14, 14));
+                    //world.add_solid((x, y) * 16 + (1, 1), (14, 14));
+                    let actor = world.add_actor((x, y) * 16, (16, 16));
+                    crates.push(new Crate { actor: actor });
                     print(set_tile_map_tile(map, "Tile Layer 1", (x, y), 0));
                     print(get_tile_map_tile(map, "Tile Layer 1", (x, y)));
                     tile = 0;
@@ -211,6 +230,10 @@ fun update_dt(dt: float) {
 
     for i in 0..world.solids.length {
         world.solid_move(world.solids[i], (dt * 10, 0));
+    }
+
+    for i in 0..crates.length {
+        crates[i].update_dt(dt);
     }
 
     player.update_dt(dt);
@@ -242,10 +265,14 @@ fun draw() {
 
     world_loader.draw();
 
-    for i in 0..world.solids.length {
-        let solid = world.solids[i];
-        //print("draw crate @ ", solid.collider.pos);
-        draw_texture_flip_frame(tex.tiles, solid.collider.pos - (1, 1), false, false, (16, 16, 16, 16), (#ffff));
+    // for i in 0..world.solids.length {
+    //     let solid = world.solids[i];
+    //     //print("draw crate @ ", solid.collider.pos);
+    //     draw_texture_flip_frame(tex.tiles, solid.collider.pos - (1, 1), false, false, (16, 16, 16, 16), (#ffff));
+    // }
+    for i in 0..crates.length {
+        let crate = crates[i];
+        draw_texture_flip_frame(tex.tiles, crate.actor.collider.pos, false, false, (16, 16, 16, 16), (#ffff));
     }
 
     player.draw();
