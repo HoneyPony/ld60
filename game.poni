@@ -50,7 +50,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), (16, 16));
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_plants1.json");
+    world_loader.load_world("level/level_testing.json");
 }
 
 class CameraController {
@@ -134,7 +134,7 @@ class Player {
     var jump_timer: float = 0;
 
     fun update_dt(dt: float) {
-        let JUMP_VEL = -200.0;
+        let JUMP_VEL = -190.0;
         let JUMP_TIMER_MAX = 0.18;
 
         run_anim.update_dt(dt);
@@ -143,7 +143,12 @@ class Player {
         let on_ceiling = actor.collider.on_ceiling;//world.collide_check(actor, actor.collider.pos - (0, 1));
 
         let use_h_frame = if not on_ground {
-            speed.y = gravity(speed.y, dt);
+            let grav_multiplier = if speed.y > 0 and speed.y < 10 {
+                // Smooth out tips of jumps by reducing gravity
+                0.3
+            } else { 1.0 };
+
+            speed.y = gravity(speed.y, dt * grav_multiplier);
             frame = if speed.y > 0 { 4 } else { 3 };
             false
         } else { true };
