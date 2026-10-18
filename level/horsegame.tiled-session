@@ -25,14 +25,25 @@
             "scaleInDock": 1
         },
         "level_boxcarry2.json": {
-            "scale": 2,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 192.25,
-                "y": 280.25
+                "x": 248.3333333333333,
+                "y": 280.99999999999994
             }
         },
         "level_boxcarry2.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_boxpush1.json": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 259.6666666666667,
+                "y": 502.33333333333337
+            }
+        },
+        "level_boxpush1.json#tiles": {
             "scaleInDock": 1
         },
         "level_plants1.json": {
@@ -62,10 +73,10 @@
         },
         "level_template.json": {
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 179,
-                "y": 265.66666666666663
+                "x": 283,
+                "y": 432.99999999999994
             }
         },
         "level_template.json#tiles": {
@@ -122,6 +133,7 @@
     "project": "horsegame.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "level_boxpush1.json",
         "level_plants1.json",
         "test.json",
         "level_box_trick.json",

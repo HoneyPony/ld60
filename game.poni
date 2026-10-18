@@ -52,7 +52,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_boxcarry2.json");
+    world_loader.load_world("level/level_boxpush1.json");
 }
 
 class CameraController {
@@ -76,8 +76,24 @@ class CameraController {
 
         if y < min_y { y = min_y; }
         if y > max_y { y = max_y; }
+        if max_y < min_y {
+            y = (min_y + max_y) / 2;
+        }
 
         screen.target_offset = -(x, y);
+
+        // Draw a bordering black rectangle around the entire map.
+        // This is so we don't have to manually set this up in Tiled.
+        //let map = world_loader.cur_map else return;
+        let size = world_loader.map_size * 16;
+        let TILE_DARK_BORDER = (#1c1c1bff);
+        let BORDER_SIZE = 16 * 32;
+        // left and right strips
+        draw_rectangle((x_bound.0 - BORDER_SIZE, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        draw_rectangle((x_bound.1, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        // top and bottom strips
+        draw_rectangle((-BORDER_SIZE, y_bound.0 - BORDER_SIZE), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
+        draw_rectangle((-BORDER_SIZE, y_bound.1), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
     }
 }
 let camera_controller = new CameraController{};
@@ -501,16 +517,16 @@ class WorldLoader {
         let map = cur_map else return;
         let size = map_size * 16;
 
-        // Draw a bordering black rectangle around the entire map.
-        // This is so we don't have to manually set this up in Tiled.
-        let TILE_DARK_BORDER = (#1c1c1bff);
-        let BORDER_SIZE = 16 * 32;
-        // left and right strips
-        draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
-        draw_rectangle((size.x, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
-        // top and bottom strips
-        draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
-        draw_rectangle((-BORDER_SIZE, size.y), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
+        // // Draw a bordering black rectangle around the entire map.
+        // // This is so we don't have to manually set this up in Tiled.
+        // let TILE_DARK_BORDER = (#1c1c1bff);
+        // let BORDER_SIZE = 16 * 32;
+        // // left and right strips
+        // draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        // draw_rectangle((size.x, -BORDER_SIZE), (BORDER_SIZE, size.y + BORDER_SIZE * 2), TILE_DARK_BORDER);
+        // // top and bottom strips
+        // draw_rectangle((-BORDER_SIZE, -BORDER_SIZE), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
+        // draw_rectangle((-BORDER_SIZE, size.y), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
 
         draw_map(map, "bg", (0, 0, size.x, size.y));
     }
