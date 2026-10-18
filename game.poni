@@ -26,6 +26,14 @@ let physics_layer = new StaticTiledLayer {
     tag: 1
 };
 
+let areas_layer = new StaticTiledLayer {
+    tile_width: 16,
+    tile_height: 16,
+    width: 1,
+    colliders: [],
+    tag: 2
+};
+
 fun init_world() {
     let data: DynArray[int] = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -37,12 +45,37 @@ fun init_world() {
     ];
 
     world.layers.push(physics_layer);
+    // world.layers.push(areas_layer); // Doesn't need to be in layers array
 
     player.actor = world.add_actor((0, -40), (16, 16));
     player.actor.collider.moveable_by_actors = false;
 
     world_loader.load_world("level/level_plants1.json");
 }
+
+class CameraController {
+    var x_bound: vec2 = (0, 0);
+    var y_bound: vec2 = (0, 0);
+
+    fun ready_draw(player_pos: vec2) {
+        let min_x = x_bound.0 + screen.target_size.x / 2;
+        let max_x = x_bound.1 - screen.target_size.x / 2;
+
+        let min_y = y_bound.0 + screen.target_size.y / 2;
+        let max_y = y_bound.1 - screen.target_size.y / 2;
+
+        var x = player_pos.x;
+        var y = player_pos.y;
+        if x < min_x { x = min_x; }
+        if x > max_x { x = max_x; }
+
+        if y < min_y { y = min_y; }
+        if y > max_y { y = max_y; }
+
+        screen.target_offset = -(x, y);
+    }
+}
+let camera_controller = new CameraController{};
 
 /// Helper for key just pressed checking due to weird update() system.
 class Key {
@@ -137,6 +170,12 @@ class Player {
         if key_e.is_just_pressed {
             // Try to eat a carrot.
             eat_carrot();
+        }
+
+        let area_check = world.collide_layer_point(areas_layer, actor.collider.pos + (8, 8));
+        if area_check == T_SOLID {
+            // Victory square, for now.
+            world_loader.reload();
         }
     }
 
@@ -241,15 +280,19 @@ class WorldLoader {
     var pending: StringLoader? = nil;
     var cur_map: Map? = nil;
     var map_size: vec2i = (0, 0);
-    //var should_load = false;
+    var should_load = false;
 
     fun load_world(path: StrBuf) {
         pending = load_string(path);
-        //should_load = true;
+        should_load = true;
+    }
+
+    fun reload() {
+        should_load = true;
     }
 
     fun tick() {
-        //if not should_load { return; }
+        if not should_load { return; }
 
         let pending_ = pending else return;
         let data = get_loaded_string(pending_);
@@ -264,14 +307,31 @@ class WorldLoader {
 
         cur_map = map;
 
-        // Somehow this caused a crash.
-        pending = nil;
+        // Somehow this caused a crash. It works now, but we use should_load
+        // so that we don't have to re-do the load_string rigamarole for reload().
+        // pending = nil;
+        should_load = false;
 
         let map = map else return;
         map_size = get_tile_map_size(map);
 
         physics_layer.colliders = [];
         physics_layer.width = map_size.x;
+
+        areas_layer.colliders = [];
+        areas_layer.width = map_size.x;
+        world.actors = [player.actor];
+        world.solids = [];
+
+        // Clear ALL the arrays.
+        crates = [];
+        moving_platforms = [];
+        plant_detect_v = [];
+
+        camera_controller.x_bound.0 = 0;
+        camera_controller.x_bound.1 = map_size.x * 16;
+        camera_controller.y_bound.0 = 0;
+        camera_controller.y_bound.1 = map_size.y * 16;
 
         for y in 0..map_size.y {
             for x in 0..map_size.x {
@@ -311,6 +371,23 @@ class WorldLoader {
                 // }
 
                 physics_layer.colliders.push(map_to_physics(tile));
+
+                // Check for camera bounds
+                let tile = get_tile_map_tile(map, "utility", (x, y));
+                if tile == 73 {
+                    camera_controller.y_bound.0 = y * 16;
+                }
+                if tile == 74 {
+                    camera_controller.y_bound.1 = y * 16 + 16;
+                }
+                if tile == 81 {
+                    camera_controller.x_bound.0 = x * 16;
+                }
+                if tile == 82 {
+                    camera_controller.x_bound.1 = x * 16 + 16;
+                }
+
+                areas_layer.colliders.push(if tile == 80 { T_SOLID } else { T_EMPTY });
             }
         }
 
@@ -426,7 +503,8 @@ fun update_dt(dt: float) {
 }
 
 fun draw() {
-    screen.target_offset = -(player.actor.collider.pos + (8, 8));
+    //screen.target_offset = -(player.actor.collider.pos + (8, 8));
+    camera_controller.ready_draw((player.actor.collider.pos + (8, 8)));
     screen.update();
 
     draw_texture(tex.parallax_bg, -screen.target_offset - (240, 180)/2, (#ffff));

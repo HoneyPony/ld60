@@ -193,6 +193,33 @@ class World {
         }
     }
 
+    fun collide_layer_point(layer: StaticTiledLayer, pos: vec2) -> int {
+        let tile_width = layer.tile_width;
+        let tile_height = layer.tile_height;
+        let layer_width = layer.width;
+        let layer_tag = layer.tag;
+
+        let layer_height = layer.colliders.length / layer_width + 1;
+
+        let y = floor(pos.y / tile_height);
+        let x = floor(pos.x / tile_width);
+
+        let ix = y * layer_width + x;
+        if y >= 0
+            and y < layer_height
+            and x >= 0
+            and x < layer_width
+            and ix >= 0
+            and ix < layer.colliders.length
+            and layer.colliders[ix] != T_EMPTY
+        {
+            let collider = layer.colliders[ix];
+            // NOTE: No support for T_SOLID_THIN
+            return collider;
+        }
+        T_EMPTY;
+    }
+
     fun collide_tag(tag: int, pos: vec2, size: vec2i) -> int {
         for i in 0..layers.length {
             let layer = layers[i];
