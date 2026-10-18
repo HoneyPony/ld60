@@ -17,30 +17,60 @@
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 191.5,
-                "y": 279.5
+                "x": 267.5,
+                "y": 309.5
             }
         },
         "level_box_trick.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_boxcarry1.5.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 251,
+                "y": 425.66666666666663
+            }
+        },
+        "level_boxcarry1.5.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_boxcarry1.json": {
+            "scale": 1.5013392857142855,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 210.1457032411537,
+                "y": 397.9779958370503
+            }
+        },
+        "level_boxcarry1.json#tiles": {
             "scaleInDock": 1
         },
         "level_boxcarry2.json": {
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 248.3333333333333,
-                "y": 280.99999999999994
+                "x": 247,
+                "y": 362.33333333333337
             }
         },
         "level_boxcarry2.json#tiles": {
             "scaleInDock": 1
         },
         "level_boxpush1.json": {
+            "expandedObjectLayers": [
+                5,
+                7,
+                2
+            ],
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 6,
             "viewCenter": {
-                "x": 259.6666666666667,
-                "y": 502.33333333333337
+                "x": 329.6666666666667,
+                "y": 343.66666666666663
             }
         },
         "level_boxpush1.json#tiles": {
@@ -108,8 +138,8 @@
             "scale": 2.4126041666666667,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 240.1968826907301,
-                "y": 160.20033677302362
+                "x": 171.80605327921938,
+                "y": 113.36298087301932
             }
         },
         "test.json#tiles": {
