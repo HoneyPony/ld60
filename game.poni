@@ -132,6 +132,7 @@ class Player {
     let run_anim = new Animation { frames: [1, 2], frame_duration: 0.1 };
 
     var jump_timer: float = 0;
+    var coyote_time: float = 0;
 
     fun update_dt(dt: float) {
         let JUMP_VEL = -190.0;
@@ -151,7 +152,11 @@ class Player {
             speed.y = gravity(speed.y, dt * grav_multiplier);
             frame = if speed.y > 0 { 4 } else { 3 };
             false
-        } else { true };
+        }
+        else {
+            coyote_time = dt * 3.2; // Should always be 4 frames I think
+            true
+        };
 
         if on_ceiling and speed.y < 0 {
             speed.y = 0;
@@ -183,8 +188,11 @@ class Player {
             }
         }
 
-        if key_space.is_just_pressed and on_ground {
+        if key_space.is_just_pressed and coyote_time > 0 {
             jump_timer = JUMP_TIMER_MAX;
+        }
+        if coyote_time > 0 {
+            coyote_time -= dt;
         }
 
         if jump_timer > 0 {
