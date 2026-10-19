@@ -76,13 +76,13 @@ let level_list: Array[StrBuf] = [
     str("level/level_box_trick.json"),
     str("level/level_boxcarry3.json"),
     str("level/level_box_hooking.json"),
-    str("level/level_plant_locked.json"), // pretty hard
     str("level/level_rescue1.json"),
     str("level/level_rescue_gap.json"),
     str("level/level_rescue_asbox.json"),
     str("level/level_rescue_ceil_gap.json"),
+    str("level/level_plant_locked_easy.tmj"), // not sure this is really the hardest but oh well
     str("level/level_game_end.json"),
-
+    str("level/level_plant_locked.json"), // pretty hard -- turning into bonus level
 ];
 
 let loaded_levels: DynArray[StringLoader] = [];
@@ -355,7 +355,7 @@ class Player {
         if area_check == T_SOLID {
             // Victory square, for now.
             // Check if the rescue horse is also in the level.
-            if check_rescue_horse() { world_loader.advance_level(); }
+            if check_rescue_horse() and not ban_win { world_loader.advance_level(); }
         }
 
         if key_r.is_just_pressed {
@@ -450,6 +450,7 @@ class Crate {
                     play_sound_looping(sound.music);
                 }
 
+                ban_win = false; // Unfroze, we can keep playing
                 remove();
             }
             return;
@@ -488,6 +489,10 @@ class Crate {
     }
 
     fun remove() {
+        if actor == rescue_horse {
+            rescue_horse = nil;
+        }
+
         let new_crates: DynArray[Crate] = [];
         for i in 0..crates_pending.length {
             if crates_pending[i] != self {
@@ -596,6 +601,7 @@ var crates_pending: DynArray[Crate] = [];
 var moving_platforms: DynArray[MovingPlatform] = [];
 var plant_detect_v: DynArray[PlantDetectV] = [];
 var text_objects: DynArray[TextObject] = [];
+var ban_win = false; // Ban win until we unfreeze horse
 
 class WorldLoader {
     var pending: StringLoader? = nil;
@@ -604,7 +610,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 7; //level_list.length - 2;
+    var level_idx: int = level_list.length - 2;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -638,6 +644,10 @@ class WorldLoader {
         set_sound_volume(sound.win, 0.4);
 
         if level_idx + 1 < level_list.length { level_idx += 1; }
+        else {
+            // Last level is a bonus level that wraps back around to the win screen.
+            level_idx = level_list.length - 2;
+        }
         load_world(level_list[level_idx]);
         screen_transition.trigger();
         screen_transition.waiting_on_world = true;
@@ -689,6 +699,7 @@ class WorldLoader {
         plant_detect_v = [];
         text_objects = [];
         rescue_horse = nil;
+        ban_win = false;
 
         screen_transition.waiting_on_world = false;
 
@@ -734,9 +745,14 @@ class WorldLoader {
                         player.hide = true;
                         crate.is_player_horse = true;
                     }
+                   
                     print(set_tile_map_tile(map, MAIN_LAYER, (x, y), 0));
                     print(get_tile_map_tile(map, MAIN_LAYER, (x, y)));
                     tile = 0;
+                }
+
+                 if tile == 75 and level_idx > 0 {
+                    ban_win = true; // Prevent win until we unfreeze
                 }
 
                 
