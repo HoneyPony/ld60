@@ -321,8 +321,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 252.25,
-                "y": 511.25
+                "x": 279.25,
+                "y": 505.25
             }
         },
         "level_template.json#tiles": {

@@ -750,6 +750,9 @@ class WorldLoader {
                     if tile == 75 {
                         return T_EMPTY;
                     }
+                    if tile >= 104 and tile <= 108 {
+                        return T_EMPTY;
+                    }
                     return T_SOLID;
                 }
 
