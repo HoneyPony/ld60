@@ -87,7 +87,7 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
-    //load_all_levels();    
+    // load_all_levels();    
 
     // world_loader.load_world("level/level_intro_jumping.json");
     // world_loader.load_world("level/level_begin_game.json");
@@ -494,6 +494,7 @@ var text_objects: DynArray[TextObject] = [];
 class WorldLoader {
     var pending: StringLoader? = nil;
     var cur_map: Map? = nil;
+    var pending_for_pull: StrBuf? = nil;
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
@@ -508,7 +509,8 @@ class WorldLoader {
     }
 
     fun load_world(path: StrBuf) {
-        pending = load_string(path);
+        //pending = load_string(path);
+        pending_for_pull = path;
         should_load = true;
         screen_transition.trigger();
         screen_transition.waiting_on_world = true;
@@ -526,15 +528,20 @@ class WorldLoader {
         if won { return; }
         won = true;
 
-        if level_idx + 1 < loaded_levels.length { level_idx += 1; }
-        load_world_s(loaded_levels[level_idx]);
+        if level_idx + 1 < level_list.length { level_idx += 1; }
+        load_world(level_list[level_idx]);
         screen_transition.trigger();
         screen_transition.waiting_on_world = true;
     }
 
     fun tick() {
-        if not should_load { return; }
         if not screen_transition.is_ready() { return; }
+        if pending_for_pull.is_some() {
+            pending = load_string(pending_for_pull.or_panic());
+            pending_for_pull = nil;
+        }
+        if not should_load { return; }
+        
 
         let pending_ = pending else return;
         let data = get_loaded_string(pending_);
@@ -751,7 +758,7 @@ class WorldLoader {
 
 let world_loader = new WorldLoader{};
 var debug = 0;
-var load_all_timer = 2.0;
+// var load_all_timer = 2.0;
 
 fun update_dt(dt: float) {
     // Update keys for is_just_pressed tracking
@@ -759,12 +766,12 @@ fun update_dt(dt: float) {
         keys[i].update();
     }
 
-    if load_all_timer > 0 {
-        load_all_timer -= dt;
-        if load_all_timer <= 0 {
-            load_all_levels();
-        }
-    }
+    // if load_all_timer > 0 {
+    //     load_all_timer -= dt;
+    //     if load_all_timer <= 0 {
+    //         load_all_levels();
+    //     }
+    // }
     
 
     title_screen.update_dt(dt);
@@ -880,6 +887,12 @@ class ScreenTransition {
 
     fun update_dt(dt: float) {
         if active {
+            if t >= 1.0 {
+                if waiting_on_world {
+                    t = 1.0;
+                    return;
+                }
+            }
             t += dt * 6.0;
             // We let the world loader deactivatee us for now.
             if t >= 3 and not waiting_on_world { active = false; }
@@ -888,7 +901,7 @@ class ScreenTransition {
 
     fun draw() {
         if active {
-            let color = (#ffbdbd3a);
+            let color = (#000000ff);
             let size = screen.target_size;
             let tl_corner = -screen.target_offset - size / 2;
             if t <= 1 {
@@ -932,7 +945,7 @@ class TitleScreen {
             }
 
             if key_space.is_just_pressed {
-                world_loader.load_world_s(loaded_levels[world_loader.level_idx]);
+                world_loader.load_world(level_list[world_loader.level_idx]);
             }
         }
     }
