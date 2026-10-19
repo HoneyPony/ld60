@@ -190,41 +190,7 @@
          "draworder":"topdown",
          "id":2,
          "name":"moving",
-         "objects":[
-                {
-                 "gid":19,
-                 "height":16,
-                 "id":10,
-                 "name":"",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"eyeball_offset",
-                         "type":"int",
-                         "value":0
-                        }, 
-                        {
-                         "name":"height",
-                         "type":"float",
-                         "value":1
-                        }, 
-                        {
-                         "name":"max_movement_y",
-                         "type":"float",
-                         "value":10
-                        }, 
-                        {
-                         "name":"start_offset",
-                         "type":"int",
-                         "value":0
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":256,
-                 "y":304
-                }],
+         "objects":[],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,

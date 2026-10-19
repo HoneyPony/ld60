@@ -20,6 +20,7 @@ let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
 // BUG (?): Can't do thing: Array[StrBuf] = ["", ""]
 
 let level_list: Array[StrBuf] = [
+    str("level/level_begin_game.json"),
     str("level/level_intro_jumping.json"),
     str("level/level_boxpush1.json"),
     str("level/level_boxpush2.json"),
@@ -76,7 +77,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_game_end.json");
+    world_loader.load_world("level/level_begin_game.json");
 }
 
 class CameraController {
@@ -183,6 +184,8 @@ class Player {
     var jump_timer: float = 0;
     var coyote_time: float = 0;
 
+    var hide: bool = false;
+
     fun update_dt(dt: float) {
         let JUMP_VEL = -190.0;
         let JUMP_TIMER_MAX = 0.18;
@@ -227,6 +230,8 @@ class Player {
         else {
             speed.x = 0;
         }
+
+        if hide { speed.x = 0; }
 
         if use_h_frame {
             if speed.x != 0 {
@@ -297,6 +302,7 @@ class Player {
     }
 
     fun draw() {
+        if hide { return; }
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
         var offset_from_16 = ((16 - PLAYER_ACTOR_SIZE.x) / 2, 16 - PLAYER_ACTOR_SIZE.y);
         draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
@@ -310,7 +316,7 @@ class Crate {
     var anim: float = -1.0;
     var horse_spawn_point: vec2i = (0, 0);
 
-    let is_player_horse: bool = false;
+    var is_player_horse: bool = false;
 
     fun check_unfreeze() {
         let map = world_loader.cur_map else return;
@@ -347,6 +353,7 @@ class Crate {
                 for i in 0..text_objects.length {
                     text_objects[i].hide = false;
                 }
+                player.hide = false;
 
                 remove();
             }
@@ -366,12 +373,20 @@ class Crate {
         world.move_v(actor, speed.y * dt, true);
     }
 
+    fun get_tile() -> int {
+        if is_horse {
+            if is_player_horse { 16 * 3 }
+            else { 16 * 2 }
+        }
+        else { 16 }
+    }
+
     fun draw() {
         var color = (#ffff);
         if anim >= 0.0 {
             color = lerp(color, (#ff843273), anim);
         }
-        draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (16 + if is_horse { 16 } else { 0 }, 16, 16, 16), color);
+        draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (get_tile(), 16, 16, 16), color);
         if anim >= 0.0 {
             draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (64, 112, 16, 16), (1, 1, 1, if anim > 1 { 1 } else { anim }));
         }
@@ -565,12 +580,18 @@ class WorldLoader {
                 }
 
                 // Crate
-                if tile == 9 or tile == 10 {
+                if tile == 9 or tile == 10 or tile == 11 {
                     //world.add_solid((x, y) * 16 + (1, 1), (14, 14));
                     let actor = world.add_actor((x, y) * 16, (16, 16));
-                    crates.push(new Crate { actor: actor, is_horse: tile == 10 });
+                    let crate = new Crate { actor: actor, is_horse: tile == 10 or tile == 11 };
+                    crates.push(crate);
                     if tile == 10 {
                         rescue_horse = actor;
+                    }
+                    if tile == 11 {
+                        // TODO: Hide the main horse
+                        player.hide = true;
+                        crate.is_player_horse = true;
                     }
                     print(set_tile_map_tile(map, MAIN_LAYER, (x, y), 0));
                     print(get_tile_map_tile(map, MAIN_LAYER, (x, y)));
