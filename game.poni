@@ -25,6 +25,7 @@ class Sounds {
         load_sound("sound/walk2.wav"),
     ];
     var win = load_sound("sound/win.wav");
+    var unfreeze = load_sound("sound/Boom4.wav");
 
     var walk_idx = 0;
     fun play_walk() {
@@ -402,6 +403,9 @@ class Crate {
 
     fun update_dt(dt: float) {
         if anim >= 0.0 {
+            if anim < 0.002 {
+                play_sound_once(sound.unfreeze);
+            }
             anim += dt;
             if anim >= 1.0 {
                 if is_player_horse {
@@ -576,7 +580,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 7;
+    var level_idx: int = 0; //level_list.length - 1;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
