@@ -74,7 +74,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 211.75,
-                "y": 461.25
+                "y": 396.75
             }
         },
         "level_boxcarry1.json#tiles": {
@@ -87,8 +87,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 224.25,
-                "y": 294.25
+                "x": 234.75,
+                "y": 274.25
             }
         },
         "level_boxcarry2.json#tiles": {
@@ -277,8 +277,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 365.66666666666663,
-                "y": 318.33333333333337
+                "x": 277,
+                "y": 311.66666666666663
             }
         },
         "level_rescue_ceil_gap.json#tiles": {
