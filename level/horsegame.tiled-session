@@ -234,6 +234,21 @@
         "level_rescue1.json#tiles": {
             "scaleInDock": 1
         },
+        "level_rescue_asbox.json": {
+            "expandedObjectLayers": [
+                5,
+                2
+            ],
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 181,
+                "y": 324.33333333333337
+            }
+        },
+        "level_rescue_asbox.json#tiles": {
+            "scaleInDock": 1
+        },
         "level_rescue_gap.json": {
             "expandedObjectLayers": [
                 5,

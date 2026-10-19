@@ -80,6 +80,7 @@ let level_list: Array[StrBuf] = [
     str("level/level_rescue1.json"),
     str("level/level_rescue_gap.json"),
     str("level/level_rescue_asbox.json"),
+    str("level/level_rescue_ceil_gap.json"),
     str("level/level_game_end.json"),
 
 ];
