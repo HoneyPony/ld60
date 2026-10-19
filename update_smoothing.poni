@@ -45,6 +45,12 @@ class UpdateSmoothing {
             }
         }
 
+        // Black background for letter box
+        clear_background((#000f));
+
+        screen.update();
+        screen.draw_bg();
+
         draw();
     }
 }
@@ -52,12 +58,6 @@ class UpdateSmoothing {
 let update_smoothing = new UpdateSmoothing{};
 
 fun update() {
-    // Black background for letter box
-    clear_background((#000f));
-
-    screen.update();
-    screen.draw_bg();
-    
     update_smoothing.update();
 }
 
