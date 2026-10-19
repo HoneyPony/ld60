@@ -31,7 +31,7 @@ let level_list: Array[StrBuf] = [
     str("level/level_plant_staircase.json"),
     str("level/level_box_trick.json"),
     str("level/level_boxcarry3.json"),
-
+    str("level/level_plant_locked.json"), // pretty hard
 ];
 
 let world = new World{};
@@ -72,7 +72,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_intro_plant.json");
+    world_loader.load_world("level/level_plant_locked.json");
 }
 
 class CameraController {

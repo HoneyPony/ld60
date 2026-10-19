@@ -117,16 +117,32 @@
         },
         "level_intro_plant.json": {
             "expandedObjectLayers": [
+                7,
+                2
+            ],
+            "scale": 1.5,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 220.3333333333333,
+                "y": 300.33333333333337
+            }
+        },
+        "level_intro_plant.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_plant_locked.json": {
+            "expandedObjectLayers": [
+                5,
                 2
             ],
             "scale": 2,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 274.25,
-                "y": 411.75
+                "x": 194.75,
+                "y": 381.75
             }
         },
-        "level_intro_plant.json#tiles": {
+        "level_plant_locked.json#tiles": {
             "scaleInDock": 1
         },
         "level_plant_staircase.json": {
@@ -174,11 +190,11 @@
                 5,
                 2
             ],
-            "scale": 0.75,
+            "scale": 2,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 263.33333333333337,
-                "y": 311.33333333333326
+                "x": 242.25,
+                "y": 295.25
             }
         },
         "level_template.json#tiles": {

@@ -212,6 +212,11 @@
                          "name":"max_movement_y",
                          "type":"float",
                          "value":10
+                        }, 
+                        {
+                         "name":"start_offset",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
