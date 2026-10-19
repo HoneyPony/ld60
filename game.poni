@@ -8,6 +8,9 @@ let screen = new Screen {
 };
 
 class Textures {
+    let title: Texture2D = load_texture("tex/title.png");
+    let title_button: Texture2D = load_texture("tex/title_button.png");
+
     let horse1: Texture2D = load_texture("tex/horse1.png");
 
     let tiles = load_texture("tex/tiles.png");
@@ -77,7 +80,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_begin_game.json");
+    // world_loader.load_world("level/level_begin_game.json");
 }
 
 class CameraController {
@@ -527,6 +530,7 @@ class WorldLoader {
         print("loaded? ", map.is_some());
 
         cur_map = map;
+        title_screen.in_title = false;
 
         // Somehow this caused a crash. It works now, but we use should_load
         // so that we don't have to re-do the load_string rigamarole for reload().
@@ -728,6 +732,16 @@ let world_loader = new WorldLoader{};
 var debug = 0;
 
 fun update_dt(dt: float) {
+    // Update keys for is_just_pressed tracking
+    for i in 0..keys.length {
+        keys[i].update();
+    }
+
+    title_screen.update_dt(dt);
+    screen_transition.update_dt(dt);
+    world_loader.tick();
+    if title_screen.in_title { return; }
+
     world.pre_physics_step();
 
     // if debug == 0 {
@@ -735,10 +749,7 @@ fun update_dt(dt: float) {
     //     world.actors[1].collider.pos.x -= 1;
     // }    
 
-    // Update keys for is_just_pressed tracking
-    for i in 0..keys.length {
-        keys[i].update();
-    }
+    
 
     // Moving platforms go before other physics objects.
     for i in 0..moving_platforms.length {
@@ -755,9 +766,9 @@ fun update_dt(dt: float) {
     crates = crates_pending;
 
     player.update_dt(dt);
-    world_loader.tick();
+    
 
-    screen_transition.update_dt(dt);
+    
     //var cam_target = -player.actor.collider.pos;
     //screen.target_offset += (cam_target - screen.target_offset) * 1;//0.03;
 }
@@ -815,6 +826,8 @@ fun draw() {
     }
 
     player.draw();
+
+    title_screen.draw();
 
     screen_transition.draw();
 }
@@ -874,3 +887,32 @@ fun ease_out_cubic(t: float) -> float {
 fun ease_in_cubic(t: float) -> float {
     return t * t * t;
 }
+
+class TitleScreen {
+    var t: float = 0;
+    var in_title: bool = true;
+
+    fun update_dt(dt: float) {
+        if in_title {
+            t += dt;
+
+            while t >= 1.2 {
+                t -= 1.2;
+            }
+
+            if key_space.is_just_pressed {
+                world_loader.load_world("level/level_begin_game.json");
+            }
+        }
+    }
+
+    fun draw() {
+        if in_title { 
+            draw_texture(tex.title, (-320, -240) / 2, (#ffff));
+            if t >= 0.5 {
+                draw_texture(tex.title_button, (-120, 50), (#ffff));
+            }
+        }
+    }
+}
+let title_screen = new TitleScreen{};
