@@ -15,11 +15,11 @@
                 7,
                 2
             ],
-            "scale": 0.33,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 315.151515151515,
-                "y": -186.3636363636365
+                "x": 275.99999999999994,
+                "y": 815.3333333333333
             }
         },
         "level_begin_game.json#tiles": {
@@ -30,11 +30,11 @@
                 5,
                 2
             ],
-            "scale": 1,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 295,
-                "y": 248.5
+                "x": 209.33333333333337,
+                "y": 344.33333333333337
             }
         },
         "level_box_hooking.json#tiles": {
@@ -45,11 +45,11 @@
                 5,
                 2
             ],
-            "scale": 1,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 174,
-                "y": 309.5
+                "x": 213.5,
+                "y": 299.75
             }
         },
         "level_box_trick.json#tiles": {
@@ -171,21 +171,21 @@
                 2
             ],
             "scale": 1.5,
-            "selectedLayer": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 157.99999999999997,
-                "y": 386.33333333333337
+                "x": 169.33333333333337,
+                "y": 340.99999999999994
             }
         },
         "level_intro_plant.json#tiles": {
             "scaleInDock": 1
         },
         "level_plant_locked.json": {
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 192.5,
-                "y": 401.25
+                "x": 121,
+                "y": 570.5
             }
         },
         "level_plant_locked.json#tiles": {
@@ -196,22 +196,22 @@
                 5,
                 2
             ],
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 20,
-                "y": 280.66666666666663
+                "x": 150.66666666666663,
+                "y": 328.33333333333337
             }
         },
         "level_plant_staircase.json#tiles": {
             "scaleInDock": 1
         },
         "level_plants1.json": {
-            "scale": 1.5013392857142855,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 121.89116859946478,
-                "y": 280.083258994945
+                "x": 136,
+                "y": 202.5
             }
         },
         "level_plants1.json#tiles": {
@@ -226,8 +226,8 @@
             "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 169.5,
-                "y": 371.25
+                "x": 248.5,
+                "y": 389.25
             }
         },
         "level_rescue1.json#tiles": {
@@ -238,11 +238,11 @@
                 5,
                 2
             ],
-            "scale": 1.5,
+            "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 224.66666666666663,
-                "y": 328.33333333333337
+                "x": 167.99999999999994,
+                "y": 273.99999999999994
             }
         },
         "level_rescue_asbox.json#tiles": {
@@ -253,11 +253,11 @@
                 5,
                 2
             ],
-            "scale": 0.5,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 330,
-                "y": -103
+                "x": 197.99999999999997,
+                "y": 320.99999999999994
             }
         },
         "level_rescue_ceil_gap.json#tiles": {
@@ -268,11 +268,11 @@
                 5,
                 2
             ],
-            "scale": 1,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 121,
-                "y": 356.5
+                "x": 326.66666666666663,
+                "y": 133.66666666666663
             }
         },
         "level_rescue_gap.json#tiles": {
@@ -330,11 +330,11 @@
             "scaleInDock": 1
         },
         "test.json": {
-            "scale": 3,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 191.5,
-                "y": 91.49999999999999
+                "x": 211,
+                "y": 154.5
             }
         },
         "test.json#tiles": {

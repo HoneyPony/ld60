@@ -604,7 +604,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = level_list.length - 2;
+    var level_idx: int = 7; //level_list.length - 2;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -855,6 +855,7 @@ class WorldLoader {
         // draw_rectangle((-BORDER_SIZE, size.y), (size.x + BORDER_SIZE * 2, BORDER_SIZE), TILE_DARK_BORDER);
 
         draw_map(map, "bg", (0, 0, size.x, size.y));
+        draw_map(map, "bg2", (0, 0, size.x, size.y));
     }
 
     fun draw() {
