@@ -19,7 +19,7 @@ class Textures {
 }
 
 class Sounds {
-    var jump = load_sound("sound/jump.wav");
+    var jump = load_sound("sound/Jump5.wav");
     var walk = [
         load_sound("sound/walk1.wav"),
         load_sound("sound/walk2.wav"),
