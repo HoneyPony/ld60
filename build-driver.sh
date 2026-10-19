@@ -16,18 +16,25 @@ function copy_resources() {
     fi
 }
 
-#copy_resources sound wav
-#copy_resources sound ogg
+copy_resources sound wav
+copy_resources sound ogg
 copy_resources tex   png
 copy_resources fonts ttf
 copy_resources level json
 
+rm -f "$DIST/sound/music.wav"
+
+cp ".build/$TOOLCHAIN-release/game${SRCEXT}" "$DIST/${DIST_NAME}${EXT}"
+
 if [[ "$PLATFORM" == "web" ]]; then
     cp web/index.html      "$DIST"
     cp web/mq_js_bundle.js "$DIST"
-fi
 
-cp ".build/$TOOLCHAIN-release/game${SRCEXT}" "$DIST/${DIST_NAME}${EXT}"
+    wasm-opt "$DIST/game.wasm" -o "$DIST/game-opt.wasm" -O3
+    wc -c "$DIST/game.wasm"
+    wc -c "$DIST/game-opt.wasm"
+    mv -f "$DIST/game-opt.wasm" "$DIST/game.wasm"
+fi
 
 # When manually creating zip files, we can use this, but if we're
 # pushing with butler, there's actually no reason to create zips.

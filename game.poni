@@ -20,13 +20,16 @@ class Textures {
 
 class Sounds {
     var jump = load_sound("sound/Jump5.wav");
+
+    // NOTE: load most sounds during the first screen transition. Use jump
+    // to stand in where needed.
     var walk = [
-        load_sound("sound/walk1.wav"),
-        load_sound("sound/walk2.wav"),
+        jump,//load_sound("sound/walk1.wav"),
+        jump,//load_sound("sound/walk2.wav"),
     ];
-    var win = load_sound("sound/win.wav");
-    var unfreeze = load_sound("sound/Boom4.wav");
-    var music = load_sound("sound/music.ogg");
+    var win = jump; //load_sound("sound/win.wav");
+    var unfreeze = jump; //load_sound("sound/Boom4.wav");
+    var music = jump; //load_sound("sound/music.ogg");
 
     var walk_idx = 0;
     fun play_walk() {
@@ -35,8 +38,21 @@ class Sounds {
         set_sound_volume(walk[walk_idx], 0.3);
     }
 
-    var plat_move = new SoundAccumulator { sound: load_sound("sound/TinyMotor.wav") };
-    var eat = load_sound("sound/Boom2.wav");
+    var plat_move = new SoundAccumulator { sound: jump };//load_sound("sound/TinyMotor.wav") };
+    var eat = jump; //load_sound("sound/Boom2.wav");
+
+    fun load_rest() {
+        music = load_sound("sound/music.ogg");
+
+        walk[0] = load_sound("sound/walk1.wav");
+        walk[1] = load_sound("sound/walk2.wav");
+
+        win = load_sound("sound/win.wav");
+        unfreeze = load_sound("sound/Boom4.wav");
+
+        plat_move.sound = load_sound("sound/TinyMotor.wav");
+        eat = load_sound("sound/Boom2.wav");
+    }
 
     var accumulators = [plat_move];
 }
@@ -990,6 +1006,9 @@ class ScreenTransition {
         tex.horse1 = load_texture("tex/horse1.png");
         //tex.tiles = load_texture("tex/tiles.png");
         tex.parallax_bg = load_texture("tex/parallax_bg.png");
+
+        sound.load_rest();
+
         needs_first_load = false;
     }
 
