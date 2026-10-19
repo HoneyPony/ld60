@@ -176,38 +176,39 @@ class World {
                 // TODO: squishers...?
             }
 
-            let squished = not self.move_v(pushing_actors[i], move.y, false);
+            let squished = not self.move_v_impl(pushing_actors[i], move.y, false, false, solid);
             if collider.remainder.y < 0 {
                 pushing_actors[i].collider.on_ground_mp = true;
             }
             if squished {
                 // Attempt to squeeze the actor somewhere, based on where it is located relative
                 // to us.
-                let actor = pushing_actors[i];
-                let actor_center = actor.collider.pos + actor.collider.size / 2;
-                let my_center = collider.pos + collider.size / 2;
-                var dist = actor_center.x - my_center.x;
-                if dist < 0 {
-                    if dist >= -4 {
-                        // Try to push it back onto ourselves.
-                        self.move_h_no_riders(actor, -dist);
-                    }
-                    else {
-                        // Try to push it to the left.
-                        if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - collider.size.x / 2) {
-                            // It couldn't be squeezed out. Uh oh!
-                        }
-                    }
-                }
-                else {
-                    if dist <= 4 {
-                        self.move_h_no_riders(actor, -dist);
-                    }
-                    else {
-                        if not self.move_h_no_riders(actor, -dist + actor.collider.size.x / 2 + collider.size.x / 2) {
-                        }
-                    }
-                }
+                // NOTE: This should be handled by move_v_impl now...?
+                // let actor = pushing_actors[i];
+                // let actor_center = actor.collider.pos + actor.collider.size / 2;
+                // let my_center = collider.pos + collider.size / 2;
+                // var dist = actor_center.x - my_center.x;
+                // if dist < 0 {
+                //     if dist >= -4 {
+                //         // Try to push it back onto ourselves.
+                //         self.move_h_no_riders(actor, -dist);
+                //     }
+                //     else {
+                //         // Try to push it to the left.
+                //         if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - collider.size.x / 2) {
+                //             // It couldn't be squeezed out. Uh oh!
+                //         }
+                //     }
+                // }
+                // else {
+                //     if dist <= 4 {
+                //         self.move_h_no_riders(actor, -dist);
+                //     }
+                //     else {
+                //         if not self.move_h_no_riders(actor, -dist + actor.collider.size.x / 2 + collider.size.x / 2) {
+                //         }
+                //     }
+                // }
             }
         }
         //collider.collidable = true;
@@ -324,7 +325,7 @@ class World {
         T_EMPTY
     }
 
-    fun try_move_v(actor: Actor, delta: float, discovered: DynArray[Actor], riders: DynArray[Actor]) -> bool {
+    fun try_move_v(actor: Actor, delta: float, discovered: DynArray[Actor], riders: DynArray[Actor], pushed_by: Solid?) -> bool {
         let col = actor.collider;
         let sign = signumf(delta);
 
@@ -335,8 +336,8 @@ class World {
 
         // TODO: descent, etc.
 
-        if tile == T_EMPTY {
-            var result = true;
+        if tile == T_EMPTY or pushed_by.is_some() {
+            var result = (tile == T_EMPTY);
             discovered.push(actor);
 
             // This actor succeeded the move so far. Now check all children in chain.
@@ -355,9 +356,10 @@ class World {
                     and signumf(actors[i].collider.pos.y - col.pos.y) == sign
                     and rect_overlaps(candidate.collider.rect(), actor.collider.rect_trim_x()) {
 
-                    let t = candidate.collider.moveable_by_actors and try_move_v(candidate, delta, discovered, riders);      
+                    let t = candidate.collider.moveable_by_actors and try_move_v(candidate, delta, discovered, riders, pushed_by);      
                     result = result and t; 
-                    if not result { break; } 
+
+                    if not result and not pushed_by.is_some() { break; } 
                 }
 
                 let rider_rect: vec4 = (
@@ -391,7 +393,35 @@ class World {
         }
     }
 
-    fun move_v_impl(actor: Actor, dy: float, update_flags: bool, enable_riders: bool) -> bool {
+    fun squish_h(actor: Actor, pushed_by: Solid) {
+        let pushed_col = pushed_by.collider;
+        let actor_center = actor.collider.pos + actor.collider.size / 2;
+        let my_center = pushed_col.pos + pushed_col.size / 2;
+        var dist = actor_center.x - my_center.x;
+        if dist < 0 {
+            if dist >= -4 {
+                // Try to push it back onto ourselves.
+                self.move_h_no_riders(actor, -dist);
+            }
+            else {
+                // Try to push it to the left.
+                if not self.move_h_no_riders(actor, -dist - actor.collider.size.x / 2 - pushed_col.size.x / 2) {
+                    // It couldn't be squeezed out. Uh oh!
+                }
+            }
+        }
+        else {
+            if dist <= 4 {
+                self.move_h_no_riders(actor, -dist);
+            }
+            else {
+                if not self.move_h_no_riders(actor, -dist + actor.collider.size.x / 2 + pushed_col.size.x / 2) {
+                }
+            }
+        }
+    }
+
+    fun move_v_impl(actor: Actor, dy: float, update_flags: bool, enable_riders: bool, pushed_by: Solid?) -> bool {
         let col = actor.collider;
         col.remainder.y += dy;
 
@@ -411,7 +441,7 @@ class World {
                 // TODO: Descent etc.
                 var discovered: DynArray[Actor] = [];
                 var riders: DynArray[Actor] = [];
-                if try_move_v(actor, sign, discovered, riders) {
+                if try_move_v(actor, sign, discovered, riders, pushed_by) {
                     for i in 0..discovered.length {
                         discovered[i].collider.pos.y += sign;
                     }
@@ -442,13 +472,26 @@ class World {
 
                             if is_rider {
                                 // Handle rider. Ban existing discovered boxes.
-                                move_v_impl(riders[i], sign, update_flags, true);
+                                move_v_impl(riders[i], sign, update_flags, true, pushed_by);
                                 //banned.push(riders[i]);
                             }
                         }
                     }
                 }
                 else {
+                    // We are being pushed unstoppably. Try to squish out of the way.
+                    if pushed_by.is_some() {
+                        let pushed_by = pushed_by.or_panic();
+                        //print("squishing ", discovered.length);
+                        for i in 0..discovered.length {
+                            squish_h(discovered[i], pushed_by);
+                        }
+
+                        // Now that we've been squished, try moving again, but don't provide a squisher
+                        // because that would recurse forever.
+                        move_v_impl(actor, dy, update_flags, enable_riders, nil);
+                    }
+
                     if update_flags {
                         if sign > 0 {
                             col.on_ground = true;
@@ -492,13 +535,13 @@ class World {
             var discovered: DynArray[Actor] = [];
             var riders: DynArray[Actor] = [];
             // Ground.
-            if not try_move_v(actor, 1, discovered, riders) {
+            if not try_move_v(actor, 1, discovered, riders, nil) {
                 col.on_ground = true;
             }
 
             discovered = [];
             riders = [];
-            if not try_move_v(actor, -1, discovered, riders) {
+            if not try_move_v(actor, -1, discovered, riders, nil) {
                 col.on_ceiling = true;
             }
         }
@@ -513,7 +556,7 @@ class World {
     }
 
     fun move_v(actor: Actor, dy: float, update_flags: bool) -> bool {
-        move_v_impl(actor, dy, update_flags, true);
+        move_v_impl(actor, dy, update_flags, true, nil);
     }
 
     fun collide_actors_h(mover: Actor, pos: vec2, sign: int, size: vec2i, chain: DynArray[Actor]) -> Actor? {
