@@ -397,7 +397,7 @@ class Player {
         if hide { return; }
         // draw_rectangle(actor.collider.pos, (16, 16), (#ffff));
         var offset_from_16 = ((16 - PLAYER_ACTOR_SIZE.x) / 2, 16 - PLAYER_ACTOR_SIZE.y);
-        draw_texture_flip_frame(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (frame * 20, 0, 20, 16), (#ffff));
+        draw_texture_flip_frame_ext(tex.horse1, actor.collider.pos + (-2, 0) - offset_from_16, flip_h, false, (1, 1, 0, 0) + (frame * (22), 0, 20, 16), (#ffff));
     }
 }
 
@@ -488,9 +488,9 @@ class Crate {
         if anim >= 0.0 {
             color = lerp(color, (#ff843273), anim);
         }
-        draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (get_tile(), 16, 16, 16), color);
+        draw_texture_flip_frame_ext(tex.tiles, actor.collider.pos, false, false, (get_tile(), 16, 16, 16), color);
         if anim >= 0.0 {
-            draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (64, 112, 16, 16), (1, 1, 1, if anim > 1 { 1 } else { anim }));
+            draw_texture_flip_frame_ext(tex.tiles, actor.collider.pos, false, false, (64, 112, 16, 16), (1, 1, 1, if anim > 1 { 1 } else { anim }));
         }
     }
 
@@ -526,7 +526,7 @@ class MovingPlatform {
     }
 
     fun draw() {
-        draw_texture_flip_frame(tex.tiles, solid.collider.pos, false, false, (16, 32, 16, 16), (#ffff));
+        draw_texture_flip_frame_ext(tex.tiles, solid.collider.pos, false, false, (16, 32, 16, 16), (#ffff));
     }
 }
 
@@ -581,7 +581,7 @@ class PlantDetectV {
         for i in 0..height {
             var tile_x = 32;
             if i != eyeball_offset { tile_x += 16; }
-            draw_texture_flip_frame(tex.tiles, solid.collider.pos + (0, i * 16), false, false, (tile_x, 32, 16, 16), (#ffff));
+            draw_texture_flip_frame_ext(tex.tiles, solid.collider.pos + (0, i * 16), false, false, (tile_x, 32, 16, 16), (#ffff));
         }
     }
 
@@ -591,6 +591,16 @@ class PlantDetectV {
             target_y = pos.y - eyeball_offset * 16;
         }
     }
+}
+
+fun draw_texture_flip_frame_ext(tex: Texture2D, pos: vec2, flip_h: bool, flip_v: bool, rect: vec4, color: vec4)
+{
+    // In order to attempt to help with the nearest neighbor issues, very very slightly clip the rect.
+    // rect.x += 1.0/512.0;
+    // rect.y += 1.0/512.0;
+    // rect.z -= 1.0/256.0;
+    // rect.w -= 1.0/256.0;
+    draw_texture_flip_frame(tex, pos, flip_h, flip_v, rect, color);
 }
 
 class TextObject {
@@ -968,6 +978,7 @@ var _draw_kill_timer: float = 0.3;
 
 fun draw() {
     if _draw_kill_timer > 0 {
+        draw_rectangle(-screen.target_offset - screen.target_size/2, screen.target_size, (#000f));
         return;
     }
 
@@ -1015,7 +1026,7 @@ fun draw() {
     // for i in 0..world.solids.length {
     //     let solid = world.solids[i];
     //     //print("draw crate @ ", solid.collider.pos);
-    //     draw_texture_flip_frame(tex.tiles, solid.collider.pos - (1, 1), false, false, (16, 16, 16, 16), (#ffff));
+    //     draw_texture_flip_frame_ext(tex.tiles, solid.collider.pos - (1, 1), false, false, (16, 16, 16, 16), (#ffff));
     // }
     for i in 0..crates.length {
         let crate = crates[i];
