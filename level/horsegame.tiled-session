@@ -25,6 +25,21 @@
         "level_begin_game.json#tiles": {
             "scaleInDock": 1
         },
+        "level_box_hooking.json": {
+            "expandedObjectLayers": [
+                5,
+                2
+            ],
+            "scale": 3,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 219.16666666666663,
+                "y": 448.49999999999994
+            }
+        },
+        "level_box_hooking.json#tiles": {
+            "scaleInDock": 1
+        },
         "level_box_trick.json": {
             "expandedObjectLayers": [
                 5,
@@ -66,11 +81,11 @@
             "scaleInDock": 1
         },
         "level_boxcarry2.json": {
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 237.5,
-                "y": 243.5
+                "x": 250.3333333333333,
+                "y": 321.66666666666663
             }
         },
         "level_boxcarry2.json#tiles": {
@@ -170,8 +185,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 353.75,
-                "y": 474.25
+                "x": 317.75,
+                "y": 495.75
             }
         },
         "level_plant_locked.json#tiles": {
