@@ -28,6 +28,7 @@ class Sounds {
         jump,//load_sound("sound/walk2.wav"),
     ];
     var win = jump; //load_sound("sound/win.wav");
+    var reset = jump;
     var unfreeze = jump; //load_sound("sound/Boom4.wav");
     var music = jump; //load_sound("sound/music.ogg");
 
@@ -50,6 +51,7 @@ class Sounds {
         walk[1] = load_sound("sound/walk2.wav");
 
         win = load_sound("sound/win.wav");
+        reset = load_sound("sound/reset_level.wav");
         unfreeze = load_sound("sound/Boom4.wav");
 
         plat_move.sound = load_sound("sound/TinyMotor.wav");
@@ -616,7 +618,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 6; //level_list.length - 3;
+    var level_idx: int = 0; //level_list.length - 3;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -640,6 +642,10 @@ class WorldLoader {
         // load_world.
         screen_transition.trigger();
         screen_transition.waiting_on_world = true;
+
+        play_sound_once(sound.reset);
+        set_sound_volume(sound.reset, 0.4);
+
     }
 
     fun advance_level() {
