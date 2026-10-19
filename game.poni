@@ -348,7 +348,9 @@ class PlantDetectV {
 
     fun draw() {
         for i in 0..height {
-            draw_texture_flip_frame(tex.tiles, solid.collider.pos + (0, i * 16), false, false, (32, 32, 16, 16), (#ffff));
+            var tile_x = 32;
+            if i != eyeball_offset { tile_x += 16; }
+            draw_texture_flip_frame(tex.tiles, solid.collider.pos + (0, i * 16), false, false, (tile_x, 32, 16, 16), (#ffff));
         }
     }
 
