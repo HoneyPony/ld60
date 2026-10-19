@@ -18,7 +18,23 @@ class Textures {
     var parallax_bg = title; //load_texture("tex/parallax_bg.png");
 }
 
+class Sounds {
+    var jump = load_sound("sound/jump.wav");
+    var walk = [
+        load_sound("sound/walk1.wav"),
+        load_sound("sound/walk2.wav"),
+    ];
+
+    var walk_idx = 0;
+    fun play_walk() {
+        walk_idx = (walk_idx + 1) % walk.length;
+        play_sound_once(walk[walk_idx]);
+        set_sound_volume(walk[walk_idx], 0.3);
+    }
+}
+
 let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
+let sound = new Sounds{};
 
 // BUG (?): Can't do thing: Array[StrBuf] = ["", ""]
 
@@ -165,12 +181,15 @@ class Animation {
     var frame_duration: float;
     var accumulator: float = 0;
 
-    fun update_dt(dt: float) {
+    fun update_dt(dt: float) -> bool {
         accumulator += dt;
         if accumulator >= frame_duration {
             accumulator -= frame_duration;
             frame = (frame + 1) % frames.length;
+
+            return true;           
         }
+        false
     }
 
     fun get_frame() -> int { frames[frame] }
@@ -200,6 +219,8 @@ class Player {
 
     var hide: bool = false;
 
+    var walk_sound_timer: float = 0;
+
     fun update_dt(dt: float) {
         let JUMP_VEL = -190.0;
         let JUMP_TIMER_MAX = 0.18;
@@ -220,9 +241,28 @@ class Player {
             false
         }
         else {
+            
+
             coyote_time = dt * 3.2; // Should always be 4 frames I think
             true
         };
+
+        if coyote_time > 0 and speed.x != 0 {
+            walk_sound_timer -= dt;
+            if walk_sound_timer <= 0 {
+                // Only animation is the walk animation...
+            //let sound = sound.walk[randi_range(0, sound.walk.length - 1)];
+            //play_sound_once(sound);
+            //set_sound_volume(sound, 0.3);
+                sound.play_walk();
+                walk_sound_timer = 0.21;
+            }
+        }
+        else {
+            // Reset to dit doot
+            sound.walk_idx = 0;
+            walk_sound_timer = 0;
+        }
 
         if on_ceiling and speed.y < 0 {
             speed.y = 0;
@@ -258,6 +298,7 @@ class Player {
 
         if (key_space.is_just_pressed or key_z.is_just_pressed) and coyote_time > 0 {
             jump_timer = JUMP_TIMER_MAX;
+            play_sound_once(sound.jump);
         }
         if coyote_time > 0 {
             coyote_time -= dt;
