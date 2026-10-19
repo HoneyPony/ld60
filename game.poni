@@ -34,6 +34,7 @@ let level_list: Array[StrBuf] = [
     str("level/level_plant_locked.json"), // pretty hard
     str("level/level_rescue1.json"),
     str("level/level_rescue_gap.json"),
+    str("level/level_game_end.json"),
 
 ];
 
@@ -75,7 +76,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_rescue_gap.json");
+    world_loader.load_world("level/level_game_end.json");
 }
 
 class CameraController {
@@ -306,8 +307,56 @@ class Crate {
     let actor: Actor;
     var speed: vec2 = (0, 0);
     let is_horse: bool = false;
+    var anim: float = -1.0;
+    var horse_spawn_point: vec2i = (0, 0);
+
+    let is_player_horse: bool = false;
+
+    fun check_unfreeze() {
+        let map = world_loader.cur_map else return;
+        let tile_coord = round2((actor.collider.pos) / 16);
+        let tile = get_tile_map_tile(map, "bg", tile_coord);
+        if tile == 75 {
+            var dist = actor.collider.pos - tile_coord * 16;
+            if abs(dist.x) < 2 and abs(dist.y) < 2 {
+                actor.collider.pos = tile_coord * 16;
+                horse_spawn_point = tile_coord;
+                anim = 0.0;
+            }
+            
+        }
+    }
 
     fun update_dt(dt: float) {
+        if anim >= 0.0 {
+            anim += dt;
+            if anim >= 1.0 {
+                if is_player_horse {
+                    player.actor.collider.pos = horse_spawn_point * 16;
+                }
+                else {
+                    let map = world_loader.cur_map;
+                    if map.is_some() {
+
+                        set_tile_map_tile(map.or_panic(), MAIN_LAYER, horse_spawn_point, 61);
+                        
+
+                    }
+                }
+
+                for i in 0..text_objects.length {
+                    text_objects[i].hide = false;
+                }
+
+                remove();
+            }
+            return;
+        }
+
+        if is_horse {
+            check_unfreeze();
+        }
+
         let on_ground = actor.collider.on_ground; 
         if on_ground { speed.y = 0; }
         else {
@@ -315,6 +364,27 @@ class Crate {
         }
 
         world.move_v(actor, speed.y * dt, true);
+    }
+
+    fun draw() {
+        var color = (#ffff);
+        if anim >= 0.0 {
+            color = lerp(color, (#ff843273), anim);
+        }
+        draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (16 + if is_horse { 16 } else { 0 }, 16, 16, 16), color);
+        if anim >= 0.0 {
+            draw_texture_flip_frame(tex.tiles, actor.collider.pos, false, false, (64, 112, 16, 16), (1, 1, 1, if anim > 1 { 1 } else { anim }));
+        }
+    }
+
+    fun remove() {
+        let new_crates: DynArray[Crate] = [];
+        for i in 0..crates_pending.length {
+            if crates_pending[i] != self {
+                new_crates.push(crates_pending[i]);
+            }
+        }
+        crates_pending = new_crates;
     }
 }
 
@@ -379,13 +449,16 @@ class PlantDetectV {
 class TextObject {
     var text: StrBuf;
     var pos: vec2;
+    var hide: bool;
 
     fun draw() {
+        if hide { return; }
         draw_text_font(text, main_font, pos, 16, (#000f));
     }
 }
 
 var crates: DynArray[Crate] = [];
+var crates_pending: DynArray[Crate] = [];
 var moving_platforms: DynArray[MovingPlatform] = [];
 var plant_detect_v: DynArray[PlantDetectV] = [];
 var text_objects: DynArray[TextObject] = [];
@@ -458,6 +531,7 @@ class WorldLoader {
 
         // Clear ALL the arrays.
         crates = [];
+        crates_pending = [];
         moving_platforms = [];
         plant_detect_v = [];
         text_objects = [];
@@ -593,9 +667,12 @@ class WorldLoader {
             let pos = round2(tiledobj_get_position(map, "text", i) + (0, 12));
             let text = tiledobj_get_text(map, "text", i) else continue;
 
+            let hide = tiledobj_get_property_int(map, "text", i, "cutscene") == 1;
+
             text_objects.push(new TextObject {
                 pos: pos,
                 text: text,
+                hide: hide,
             })
         }
     }
@@ -650,9 +727,11 @@ fun update_dt(dt: float) {
         plant_detect_v[i].update_dt(dt);
     }
 
+    crates_pending = crates;
     for i in 0..crates.length {
         crates[i].update_dt(dt);
     }
+    crates = crates_pending;
 
     player.update_dt(dt);
     world_loader.tick();
@@ -711,7 +790,7 @@ fun draw() {
     // }
     for i in 0..crates.length {
         let crate = crates[i];
-        draw_texture_flip_frame(tex.tiles, crate.actor.collider.pos, false, false, (16 + if crate.is_horse { 16 } else { 0 }, 16, 16, 16), (#ffff));
+        crate.draw();
     }
 
     player.draw();
