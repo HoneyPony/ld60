@@ -24,6 +24,11 @@ copy_resources level json
 copy_resources level tmj
 
 rm -f "$DIST/sound/music.wav"
+rm -f "$DIST/sound/music_menu.wav"
+
+rm -f "$DIST/level/test.json"
+rm -f "$DIST/level/level_template.json"
+rm -f "$DIST/level/level_testing.json"
 
 cp ".build/$TOOLCHAIN-release/game${SRCEXT}" "$DIST/${DIST_NAME}${EXT}"
 
