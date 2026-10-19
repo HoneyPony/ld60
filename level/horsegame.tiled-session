@@ -171,6 +171,22 @@
         "level_plants1.json#tiles": {
             "scaleInDock": 1
         },
+        "level_rescue1.json": {
+            "expandedObjectLayers": [
+                5,
+                2,
+                9
+            ],
+            "scale": 2,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 231.25,
+                "y": 406.25
+            }
+        },
+        "level_rescue1.json#tiles": {
+            "scaleInDock": 1
+        },
         "level_template": {
             "expandedObjectLayers": [
                 5
