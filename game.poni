@@ -34,6 +34,7 @@ class Sounds {
     }
 
     var plat_move = new SoundAccumulator { sound: load_sound("sound/TinyMotor.wav") };
+    var eat = load_sound("sound/Boom2.wav");
 
     var accumulators = [plat_move];
 }
@@ -357,6 +358,9 @@ class Player {
         if tile == 27 {
             // Eat the carrot.
             set_tile_map_tile(map, MAIN_LAYER, pos, 24);
+
+            play_sound_once(sound.eat);
+            set_sound_volume(sound.eat, 0.3);
 
             for i in 0..plant_detect_v.length {
                 plant_detect_v[i].carrot(pos);
