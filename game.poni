@@ -24,6 +24,7 @@ class Sounds {
         load_sound("sound/walk1.wav"),
         load_sound("sound/walk2.wav"),
     ];
+    var win = load_sound("sound/win.wav");
 
     var walk_idx = 0;
     fun play_walk() {
@@ -254,8 +255,11 @@ class Player {
             //let sound = sound.walk[randi_range(0, sound.walk.length - 1)];
             //play_sound_once(sound);
             //set_sound_volume(sound, 0.3);
-                sound.play_walk();
-                walk_sound_timer = 0.21;
+                // Ban walk sounds during win sound
+                if not world_loader.won and not screen_transition.active {
+                    sound.play_walk();
+                    walk_sound_timer = 0.21;
+                }
             }
         }
         else {
@@ -540,7 +544,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 12;
+    var level_idx: int = 1;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -569,6 +573,9 @@ class WorldLoader {
     fun advance_level() {
         if won { return; }
         won = true;
+
+        play_sound_once(sound.win);
+        set_sound_volume(sound.win, 0.4);
 
         if level_idx + 1 < level_list.length { level_idx += 1; }
         load_world(level_list[level_idx]);
