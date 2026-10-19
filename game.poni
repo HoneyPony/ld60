@@ -382,10 +382,15 @@ class WorldLoader {
     fun load_world(path: StrBuf) {
         pending = load_string(path);
         should_load = true;
+        screen_transition.trigger();
     }
 
     fun reload() {
         should_load = true;
+        // NOTE: This will not overwrite an advance_level() because we already set should_load in
+        // load_world.
+        screen_transition.trigger();
+        screen_transition.waiting_on_world = true;
     }
 
     fun advance_level() {
@@ -394,10 +399,13 @@ class WorldLoader {
 
         if level_idx + 1 < level_list.length { level_idx += 1; }
         load_world(level_list[level_idx]);
+        screen_transition.trigger();
+        screen_transition.waiting_on_world = true;
     }
 
     fun tick() {
         if not should_load { return; }
+        if not screen_transition.is_ready() { return; }
 
         let pending_ = pending else return;
         let data = get_loaded_string(pending_);
@@ -433,6 +441,8 @@ class WorldLoader {
         moving_platforms = [];
         plant_detect_v = [];
         text_objects = [];
+
+        screen_transition.waiting_on_world = false;
 
         won = false;
 
@@ -617,7 +627,7 @@ fun update_dt(dt: float) {
     player.update_dt(dt);
     world_loader.tick();
 
-
+    screen_transition.update_dt(dt);
     //var cam_target = -player.actor.collider.pos;
     //screen.target_offset += (cam_target - screen.target_offset) * 1;//0.03;
 }
@@ -675,4 +685,62 @@ fun draw() {
     }
 
     player.draw();
+
+    screen_transition.draw();
+}
+
+class ScreenTransition {
+    var t: float = 0;
+    var active: bool = false;
+    var waiting_on_world = false;
+
+    fun trigger() {
+        if active { return; }
+        active = true;
+        t = 0;
+    }
+
+    /// Whether we are ready to load the level.
+    fun is_ready() -> bool {
+        return t >= 1;
+    }
+
+    fun update_dt(dt: float) {
+        if active {
+            t += dt * 6.0;
+            // We let the world loader deactivatee us for now.
+            if t >= 3 and not waiting_on_world { active = false; }
+        }
+    }
+
+    fun draw() {
+        if active {
+            let size = screen.target_size;
+            let tl_corner = -screen.target_offset - size / 2;
+            if t <= 1 {
+                let t = ease_out_cubic(t);
+                draw_rectangle(tl_corner, (size.x * t, size.y), (#000f));
+            }
+            else {
+                if t <= 2 {
+                    draw_rectangle(tl_corner, size, (#000f));
+                }
+                else {
+                    let t = ease_in_cubic(t - 2);
+                    draw_rectangle(tl_corner + (size.x * t, 0), (size.x * (1 - t), size.y), (#000f));
+                }
+            }
+        }
+    }
+}
+let screen_transition = new ScreenTransition{};
+
+fun ease_out_cubic(t: float) -> float {
+    let t = 1 - t;
+    let t = t * t * t;
+    return 1 - t;
+}
+
+fun ease_in_cubic(t: float) -> float {
+    return t * t * t;
 }
