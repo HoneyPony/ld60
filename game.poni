@@ -616,7 +616,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 0; //level_list.length - 3;
+    var level_idx: int = 6; //level_list.length - 3;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -672,12 +672,12 @@ class WorldLoader {
         let data = get_loaded_string(pending_);
         let data = data else return;
 
-        print(data);
+        //print(data);
 
         let a: StrBuf = "../tex/tiles.png";
         let map = load_map(data, [a], [tex.tiles]);
 
-        print("loaded? ", map.is_some());
+        //print("loaded? ", map.is_some());
 
         cur_map = map;
         title_screen.in_title = false;
@@ -752,8 +752,8 @@ class WorldLoader {
                         crate.is_player_horse = true;
                     }
                    
-                    print(set_tile_map_tile(map, MAIN_LAYER, (x, y), 0));
-                    print(get_tile_map_tile(map, MAIN_LAYER, (x, y)));
+                    set_tile_map_tile(map, MAIN_LAYER, (x, y), 0);//);
+                    //get_tile_map_tile(map, MAIN_LAYER, (x, y)));
                     tile = 0;
                 }
 

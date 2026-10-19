@@ -18,8 +18,8 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 344.5,
-                "y": 590.5
+                "x": 426.5,
+                "y": 300.5
             }
         },
         "level_begin_game.json#tiles": {
@@ -274,11 +274,11 @@
                 5,
                 2
             ],
-            "scale": 2,
-            "selectedLayer": 3,
+            "scale": 1.5,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 459.25,
-                "y": 313.25
+                "x": 319.66666666666663,
+                "y": 388.99999999999994
             }
         },
         "level_rescue_ceil_gap.json#tiles": {
