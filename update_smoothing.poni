@@ -46,7 +46,7 @@ class UpdateSmoothing {
         }
 
         // Black background for letter box
-        clear_background((#40bf77ff));
+        clear_background((#000f));
 
         screen.update();
         screen.draw_bg();

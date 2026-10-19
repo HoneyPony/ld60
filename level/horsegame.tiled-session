@@ -110,8 +110,8 @@
             "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 216.25,
-                "y": 503.25
+                "x": 212.75,
+                "y": 448.25
             }
         },
         "level_boxpush2.json#tiles": {
@@ -124,10 +124,10 @@
                 8
             ],
             "scale": 2,
-            "selectedLayer": 3,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 237.75,
-                "y": 435.25
+                "x": 216.25,
+                "y": 472.75
             }
         },
         "level_game_end.json#tiles": {

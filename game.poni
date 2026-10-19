@@ -11,11 +11,11 @@ class Textures {
     let title: Texture2D = load_texture("tex/title.png");
     let title_button: Texture2D = load_texture("tex/title_button.png");
 
-    let horse1: Texture2D = load_texture("tex/horse1.png");
+    var horse1: Texture2D = title; //load_texture("tex/horse1.png");
 
-    let tiles = load_texture("tex/tiles.png");
+    var tiles = load_texture("tex/tiles.png");
 
-    let parallax_bg = load_texture("tex/parallax_bg.png");
+    var parallax_bg = title; //load_texture("tex/parallax_bg.png");
 }
 
 let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
@@ -874,6 +874,8 @@ class ScreenTransition {
     var active: bool = false;
     var waiting_on_world = false;
 
+    var needs_first_load = true;
+
     fun trigger() {
         if active { return; }
         active = true;
@@ -885,9 +887,19 @@ class ScreenTransition {
         return t >= 1;
     }
 
+    fun load_init() {
+        tex.horse1 = load_texture("tex/horse1.png");
+        //tex.tiles = load_texture("tex/tiles.png");
+        tex.parallax_bg = load_texture("tex/parallax_bg.png");
+        needs_first_load = false;
+    }
+
     fun update_dt(dt: float) {
         if active {
             if t >= 1.0 {
+                if needs_first_load {
+                    load_init();
+                }
                 if waiting_on_world {
                     t = 1.0;
                     return;
