@@ -31,6 +31,8 @@ class Sounds {
     var unfreeze = jump; //load_sound("sound/Boom4.wav");
     var music = jump; //load_sound("sound/music.ogg");
 
+    var music_menu = load_sound("sound/music_menu.ogg");
+
     var walk_idx = 0;
     fun play_walk() {
         walk_idx = (walk_idx + 1) % walk.length;
@@ -38,7 +40,7 @@ class Sounds {
         set_sound_volume(walk[walk_idx], 0.3);
     }
 
-    var plat_move = new SoundAccumulator { sound: jump };//load_sound("sound/TinyMotor.wav") };
+    var plat_move = new SoundAccumulator { sound: jump, volume: 0.3 };//load_sound("sound/TinyMotor.wav") };
     var eat = jump; //load_sound("sound/Boom2.wav");
 
     fun load_rest() {
@@ -328,6 +330,7 @@ class Player {
         if (key_space.is_just_pressed or key_z.is_just_pressed) and coyote_time > 0 {
             jump_timer = JUMP_TIMER_MAX;
             play_sound_once(sound.jump);
+            set_sound_volume(sound.jump, 0.3);
         }
         if coyote_time > 0 {
             coyote_time -= dt;
@@ -424,6 +427,7 @@ class Crate {
         if anim >= 0.0 {
             if anim < 0.002 {
                 play_sound_once(sound.unfreeze);
+                set_sound_volume(sound.unfreeze, 0.3);
             }
             anim += dt;
             if anim >= 1.0 {
@@ -527,6 +531,7 @@ class MovingPlatform {
 class SoundAccumulator {
     var play_this_frame: bool = false;
     var sound: Sound;
+    var volume: float = 1.0;
 
     fun play() {
         play_this_frame = true;
@@ -539,6 +544,7 @@ class SoundAccumulator {
     fun update_post() {
         if play_this_frame {
             play_sound_once(sound);
+            set_sound_volume(sound, volume);
         }
     }
 }
@@ -610,7 +616,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = level_list.length - 3;
+    var level_idx: int = 0; //level_list.length - 3;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -887,6 +893,12 @@ var debug = 0;
 // var load_all_timer = 2.0;
 
 fun update_dt(dt: float) {
+    if _draw_kill_timer > 0 {
+        _draw_kill_timer -= dt;
+        if is_sound_loaded(sound.music_menu) {
+            _draw_kill_timer = -1;
+        }
+    }
     // Update keys for is_just_pressed tracking
     for i in 0..keys.length {
         keys[i].update();
@@ -907,7 +919,9 @@ fun update_dt(dt: float) {
     title_screen.update_dt(dt);
     screen_transition.update_dt(dt);
     world_loader.tick();
-    if title_screen.in_title { return; }
+    if title_screen.in_title {
+        return;
+    }
 
     world.pre_physics_step();
 
@@ -944,7 +958,13 @@ fun update_dt(dt: float) {
     //screen.target_offset += (cam_target - screen.target_offset) * 1;//0.03;
 }
 
+var _draw_kill_timer: float = 0.3;
+
 fun draw() {
+    if _draw_kill_timer > 0 {
+        return;
+    }
+
     if is_font_loaded(main_font) {
         set_font_filter_mode(main_font, FILTER_NEAREST);
     }
@@ -1085,6 +1105,8 @@ class TitleScreen {
     var t: float = 0;
     var in_title: bool = true;
 
+    var playing_music = false;
+
     fun update_dt(dt: float) {
         if in_title {
             t += dt;
@@ -1096,6 +1118,17 @@ class TitleScreen {
             if key_space.is_just_pressed {
                 world_loader.load_world(level_list[world_loader.level_idx]);
             }
+
+            if not playing_music {
+                if is_sound_loaded(sound.music_menu) {
+                    play_sound_looping(sound.music_menu);
+                    playing_music = true;
+                }
+            }
+        }
+        else {
+            stop_sound(sound.music_menu);
+            playing_music = false;
         }
     }
 
