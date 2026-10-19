@@ -32,6 +32,10 @@ class Sounds {
         play_sound_once(walk[walk_idx]);
         set_sound_volume(walk[walk_idx], 0.3);
     }
+
+    var plat_move = new SoundAccumulator { sound: load_sound("sound/TinyMotor.wav") };
+
+    var accumulators = [plat_move];
 }
 
 let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
@@ -483,7 +487,24 @@ class MovingPlatform {
     }
 }
 
+class SoundAccumulator {
+    var play_this_frame: bool = false;
+    var sound: Sound;
 
+    fun play() {
+        play_this_frame = true;
+    }
+
+    fun update_pre() {
+        play_this_frame = false;
+    }
+
+    fun update_post() {
+        if play_this_frame {
+            play_sound_once(sound);
+        }
+    }
+}
 
 class PlantDetectV {
     let solid: Solid;
@@ -493,6 +514,7 @@ class PlantDetectV {
     let eyeball_offset: int;
 
     var target_y: float;
+    var is_moving: bool = false;
 
     fun update_dt(dt: float) {
         // How do we decide when to move back, etc...?
@@ -502,6 +524,12 @@ class PlantDetectV {
             frame_motion = motion;
         }
         world.solid_move(solid, (0, frame_motion));
+
+        var was_moving = is_moving;
+        is_moving = abs(frame_motion) > 0.1;
+        if is_moving and not was_moving {
+            sound.plat_move.play();
+        }
     }
 
     fun draw() {
@@ -544,7 +572,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 1;
+    var level_idx: int = 7;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
@@ -815,6 +843,10 @@ fun update_dt(dt: float) {
         keys[i].update();
     }
 
+    for i in 0..sound.accumulators.length {
+        sound.accumulators[i].update_pre();
+    }
+
     // if load_all_timer > 0 {
     //     load_all_timer -= dt;
     //     if load_all_timer <= 0 {
@@ -852,6 +884,10 @@ fun update_dt(dt: float) {
     crates = crates_pending;
 
     player.update_dt(dt);
+
+    for i in 0..sound.accumulators.length {
+        sound.accumulators[i].update_post();
+    }
     
 
     
