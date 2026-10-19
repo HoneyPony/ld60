@@ -26,6 +26,7 @@ class Sounds {
     ];
     var win = load_sound("sound/win.wav");
     var unfreeze = load_sound("sound/Boom4.wav");
+    var music = load_sound("sound/music.ogg");
 
     var walk_idx = 0;
     fun play_walk() {
@@ -425,6 +426,11 @@ class Crate {
                     text_objects[i].hide = false;
                 }
                 player.hide = false;
+
+                // Play music forever after player unfreezes
+                if is_player_horse {
+                    play_sound_looping(sound.music);
+                }
 
                 remove();
             }
