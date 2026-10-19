@@ -324,7 +324,7 @@ class Crate {
     fun check_unfreeze() {
         let map = world_loader.cur_map else return;
         let tile_coord = round2((actor.collider.pos) / 16);
-        let tile = get_tile_map_tile(map, "bg", tile_coord);
+        let tile = get_tile_map_tile(map, MAIN_LAYER, tile_coord);
         if tile == 75 {
             var dist = actor.collider.pos - tile_coord * 16;
             if abs(dist.x) < 2 and abs(dist.y) < 2 {
@@ -347,7 +347,7 @@ class Crate {
                     let map = world_loader.cur_map;
                     if map.is_some() {
 
-                        set_tile_map_tile(map.or_panic(), MAIN_LAYER, horse_spawn_point, 61);
+                        set_tile_map_tile(map.or_panic(), "fg", horse_spawn_point, 61);
                         
 
                     }
@@ -487,7 +487,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 0;
+    var level_idx: int = 13;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world(path: StrBuf) {
@@ -578,6 +578,9 @@ class WorldLoader {
                         return T_SOLID_THIN;
                     }
                     if tile >= 40 and tile <= 63 {
+                        return T_EMPTY;
+                    }
+                    if tile == 75 {
                         return T_EMPTY;
                     }
                     return T_SOLID;
@@ -901,7 +904,7 @@ class TitleScreen {
             }
 
             if key_space.is_just_pressed {
-                world_loader.load_world("level/level_begin_game.json");
+                world_loader.load_world(level_list[world_loader.level_idx]);
             }
         }
     }

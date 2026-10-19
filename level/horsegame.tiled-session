@@ -12,13 +12,14 @@
         "level_begin_game.json": {
             "expandedObjectLayers": [
                 5,
+                7,
                 2
             ],
-            "scale": 1,
+            "scale": 8,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 194.5,
-                "y": 1375.5
+                "x": 149.0625,
+                "y": 1383.4375
             }
         },
         "level_begin_game.json#tiles": {
@@ -44,32 +45,32 @@
                 2
             ],
             "scale": 1.5,
-            "selectedLayer": 3,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 251,
-                "y": 425.66666666666663
+                "x": 251.66666666666669,
+                "y": 428.33333333333337
             }
         },
         "level_boxcarry1.5.json#tiles": {
             "scaleInDock": 1
         },
         "level_boxcarry1.json": {
-            "scale": 1.5013392857142855,
+            "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 210.1457032411537,
-                "y": 397.9779958370503
+                "x": 343,
+                "y": 400.99999999999994
             }
         },
         "level_boxcarry1.json#tiles": {
             "scaleInDock": 1
         },
         "level_boxcarry2.json": {
-            "scale": 1.5,
-            "selectedLayer": 3,
+            "scale": 1,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 247,
-                "y": 362.33333333333337
+                "x": 237.5,
+                "y": 243.5
             }
         },
         "level_boxcarry2.json#tiles": {
@@ -79,11 +80,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1,
+            "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 319.5,
-                "y": 310.5
+                "x": 250.3333333333333,
+                "y": 344.99999999999994
             }
         },
         "level_boxcarry3.json#tiles": {
@@ -95,22 +96,22 @@
                 7,
                 2
             ],
-            "scale": 1.5,
-            "selectedLayer": 6,
+            "scale": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 329.6666666666667,
-                "y": 343.66666666666663
+                "x": 418.5,
+                "y": 370.5
             }
         },
         "level_boxpush1.json#tiles": {
             "scaleInDock": 1
         },
         "level_boxpush2.json": {
-            "scale": 1,
+            "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 461.5,
-                "y": 481.5
+                "x": 216.25,
+                "y": 503.25
             }
         },
         "level_boxpush2.json#tiles": {
@@ -122,11 +123,11 @@
                 2,
                 8
             ],
-            "scale": 1.5,
-            "selectedLayer": 6,
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 280.33333333333326,
-                "y": 375.66666666666663
+                "x": 237.75,
+                "y": 435.25
             }
         },
         "level_game_end.json#tiles": {
@@ -155,7 +156,7 @@
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 220.3333333333333,
-                "y": 300.33333333333337
+                "y": 386.33333333333337
             }
         },
         "level_intro_plant.json#tiles": {
@@ -166,11 +167,11 @@
                 5,
                 2
             ],
-            "scale": 0.75,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 450,
-                "y": 404.66666666666674
+                "x": 353.75,
+                "y": 474.25
             }
         },
         "level_plant_locked.json#tiles": {
@@ -195,8 +196,8 @@
             "scale": 1.5013392857142855,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 183.83586083853706,
-                "y": 279.41718703538515
+                "x": 184.16889681831702,
+                "y": 280.083258994945
             }
         },
         "level_plants1.json#tiles": {
@@ -209,10 +210,10 @@
                 9
             ],
             "scale": 2,
-            "selectedLayer": 5,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 231.25,
-                "y": 406.25
+                "x": 216.25,
+                "y": 371.25
             }
         },
         "level_rescue1.json#tiles": {
@@ -253,10 +254,10 @@
                 2
             ],
             "scale": 2,
-            "selectedLayer": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 242.25,
-                "y": 295.25
+                "x": 169.25,
+                "y": 511.25
             }
         },
         "level_template.json#tiles": {
@@ -285,11 +286,11 @@
             "scaleInDock": 1
         },
         "test.json": {
-            "scale": 2.4126041666666667,
+            "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 171.80605327921938,
-                "y": 113.36298087301932
+                "x": 191.5,
+                "y": 91.49999999999999
             }
         },
         "test.json#tiles": {
