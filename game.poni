@@ -42,7 +42,7 @@ class Sounds {
     var eat = jump; //load_sound("sound/Boom2.wav");
 
     fun load_rest() {
-        music = load_sound("sound/music.ogg");
+        //music = load_sound("sound/music.ogg");
 
         walk[0] = load_sound("sound/walk1.wav");
         walk[1] = load_sound("sound/walk2.wav");
@@ -79,6 +79,7 @@ let level_list: Array[StrBuf] = [
     str("level/level_plant_locked.json"), // pretty hard
     str("level/level_rescue1.json"),
     str("level/level_rescue_gap.json"),
+    str("level/level_rescue_asbox.json"),
     str("level/level_game_end.json"),
 
 ];
@@ -602,7 +603,7 @@ class WorldLoader {
     var map_size: vec2i = (0, 0);
     var should_load = false;
 
-    var level_idx: int = 0; //level_list.length - 1;
+    var level_idx: int = level_list.length - 2;
     var won: bool = false; // Set when we make the first call to advance_level() this level.
 
     fun load_world_s(loader: StringLoader?) {
