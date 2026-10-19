@@ -115,6 +115,35 @@
         "level_intro_jumping.json#tiles": {
             "scaleInDock": 1
         },
+        "level_intro_plant.json": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 274.25,
+                "y": 411.75
+            }
+        },
+        "level_intro_plant.json#tiles": {
+            "scaleInDock": 1
+        },
+        "level_plant_staircase.json": {
+            "expandedObjectLayers": [
+                5,
+                2
+            ],
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 144.66666666666674,
+                "y": 280.66666666666663
+            }
+        },
+        "level_plant_staircase.json#tiles": {
+            "scaleInDock": 1
+        },
         "level_plants1.json": {
             "scale": 1.5013392857142855,
             "selectedLayer": 0,
@@ -141,11 +170,15 @@
             "scaleInDock": 1
         },
         "level_template.json": {
+            "expandedObjectLayers": [
+                5,
+                2
+            ],
             "scale": 0.75,
-            "selectedLayer": 1,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 247.33333333333337,
-                "y": 452.66666666666674
+                "x": 263.33333333333337,
+                "y": 311.33333333333326
             }
         },
         "level_template.json#tiles": {

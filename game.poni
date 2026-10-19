@@ -26,6 +26,7 @@ let level_list: Array[StrBuf] = [
     str("level/level_boxcarry1.json"),
     str("level/level_boxcarry1.5.json"),
     str("level/level_boxcarry2.json"),
+    str("level/level_intro_plant.json"),
     str("level/level_plants1.json"),
     str("level/level_plant_staircase.json"),
     str("level/level_box_trick.json"),
@@ -71,7 +72,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_plant_staircase.json");
+    world_loader.load_world("level/level_intro_plant.json");
 }
 
 class CameraController {
@@ -535,6 +536,7 @@ class WorldLoader {
                 let max_movement_y = tiledobj_get_property_int(map, "moving", i, "max_movement_y");
                 let eyeball_offset = tiledobj_get_property_int(map, "moving", i, "eyeball_offset");
                 let pos = tiledobj_get_position(map, "moving", i);
+                let offset_y = tiledobj_get_property_int(map, "moving", i, "start_offset");
 
                 let pos = pos + (0, -16); // Fix tiled janky coordinates
 
@@ -546,13 +548,13 @@ class WorldLoader {
                     max_y = tmp;
                 }
 
-                let solid = world.add_solid(pos, (16, 16 * height));
+                let solid = world.add_solid(pos + (0, offset_y * 16), (16, 16 * height));
                 plant_detect_v.push(new PlantDetectV {
                     solid: solid,
                     height: height,
                     min_y: min_y,
                     max_y: max_y,
-                    target_y: pos.y, // start at same pos
+                    target_y: pos.y + offset_y * 16, // apply start_offset if we had it
                     eyeball_offset: eyeball_offset,
                 });
             }

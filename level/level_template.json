@@ -192,19 +192,6 @@
          "name":"moving",
          "objects":[
                 {
-                 "gid":17,
-                 "height":16,
-                 "id":8,
-                 "name":"",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":99.5,
-                 "y":304.5
-                }, 
-                {
                  "gid":19,
                  "height":16,
                  "id":10,
@@ -214,12 +201,12 @@
                         {
                          "name":"eyeball_offset",
                          "type":"int",
-                         "value":2
+                         "value":0
                         }, 
                         {
                          "name":"height",
                          "type":"float",
-                         "value":3
+                         "value":1
                         }, 
                         {
                          "name":"max_movement_y",
