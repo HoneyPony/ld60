@@ -21,6 +21,7 @@ copy_resources sound ogg
 copy_resources tex   png
 copy_resources fonts ttf
 copy_resources level json
+copy_resources level tmj
 
 rm -f "$DIST/sound/music.wav"
 
