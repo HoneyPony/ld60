@@ -87,6 +87,17 @@
         "level_boxpush1.json#tiles": {
             "scaleInDock": 1
         },
+        "level_intro_jumping.json": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 275.6666666666667,
+                "y": 414.33333333333337
+            }
+        },
+        "level_intro_jumping.json#tiles": {
+            "scaleInDock": 1
+        },
         "level_plants1.json": {
             "scale": 1.5013392857142855,
             "selectedLayer": 0,

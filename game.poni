@@ -22,6 +22,7 @@ let tex = { set_default_filter_mode(FILTER_NEAREST); new Textures{} };
 let level_list: Array[StrBuf] = [
     str("level/level_intro_jumping.json"),
     str("level/level_boxpush1.json"),
+    str("level/level_boxpush2.json"),
     str("level/level_boxcarry1.json"),
     str("level/level_boxcarry1.5.json"),
     str("level/level_boxcarry2.json"),
@@ -68,7 +69,8 @@ fun init_world() {
     player.actor = world.add_actor((0, -40), PLAYER_ACTOR_SIZE);
     player.actor.collider.moveable_by_actors = false;
 
-    world_loader.load_world("level/level_intro_jumping.json");
+    // world_loader.load_world("level/level_intro_jumping.json");
+    world_loader.load_world("level/level_boxpush2.json");
 }
 
 class CameraController {
