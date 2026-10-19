@@ -32,6 +32,8 @@ let level_list: Array[StrBuf] = [
     str("level/level_box_trick.json"),
     str("level/level_boxcarry3.json"),
     str("level/level_plant_locked.json"), // pretty hard
+    str("level/level_rescue1.json"),
+    
 ];
 
 let world = new World{};
@@ -72,7 +74,7 @@ fun init_world() {
     player.actor.collider.moveable_by_actors = false;
 
     // world_loader.load_world("level/level_intro_jumping.json");
-    world_loader.load_world("level/level_plant_locked.json");
+    world_loader.load_world("level/level_rescue1.json");
 }
 
 class CameraController {
@@ -137,6 +139,8 @@ let key_x = new Key { keycode: K_X };
 let key_r = new Key { keycode: K_R };
 let key_z = new Key { keycode: K_Z };
 let keys = [key_space, key_x, key_r, key_z];
+
+var rescue_horse: Actor? = nil;
 
 class Animation {
     let frames: Array[int];
@@ -259,12 +263,20 @@ class Player {
         let area_check = world.collide_layer_point(areas_layer, actor.collider.pos + (8, 8));
         if area_check == T_SOLID {
             // Victory square, for now.
-            world_loader.advance_level();
+            // Check if the rescue horse is also in the level.
+            if check_rescue_horse() { world_loader.advance_level(); }
         }
 
         if key_r.is_just_pressed {
             world_loader.reload();
         }
+    }
+
+    fun check_rescue_horse() -> bool {
+        let horse = rescue_horse else return true; ; // TODO: Don't make this require double-semicolon
+
+        let check = world.collide_layer_point(areas_layer, horse.collider.pos + (8, 8));
+        return check == T_SOLID;
     }
 
     fun eat_carrot() {
@@ -292,6 +304,7 @@ class Player {
 class Crate {
     let actor: Actor;
     var speed: vec2 = (0, 0);
+    let is_horse: bool = false;
 
     fun update_dt(dt: float) {
         let on_ground = actor.collider.on_ground; 
@@ -447,6 +460,7 @@ class WorldLoader {
         moving_platforms = [];
         plant_detect_v = [];
         text_objects = [];
+        rescue_horse = nil;
 
         screen_transition.waiting_on_world = false;
 
@@ -476,10 +490,13 @@ class WorldLoader {
                 }
 
                 // Crate
-                if tile == 9 {
+                if tile == 9 or tile == 10 {
                     //world.add_solid((x, y) * 16 + (1, 1), (14, 14));
                     let actor = world.add_actor((x, y) * 16, (16, 16));
-                    crates.push(new Crate { actor: actor });
+                    crates.push(new Crate { actor: actor, is_horse: tile == 10 });
+                    if tile == 10 {
+                        rescue_horse = actor;
+                    }
                     print(set_tile_map_tile(map, MAIN_LAYER, (x, y), 0));
                     print(get_tile_map_tile(map, MAIN_LAYER, (x, y)));
                     tile = 0;
@@ -693,7 +710,7 @@ fun draw() {
     // }
     for i in 0..crates.length {
         let crate = crates[i];
-        draw_texture_flip_frame(tex.tiles, crate.actor.collider.pos, false, false, (16, 16, 16, 16), (#ffff));
+        draw_texture_flip_frame(tex.tiles, crate.actor.collider.pos, false, false, (16 + if crate.is_horse { 16 } else { 0 }, 16, 16, 16), (#ffff));
     }
 
     player.draw();

@@ -135,11 +135,11 @@
                 5,
                 2
             ],
-            "scale": 2,
-            "selectedLayer": 4,
+            "scale": 0.75,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 194.75,
-                "y": 381.75
+                "x": 450,
+                "y": 404.66666666666674
             }
         },
         "level_plant_locked.json#tiles": {
